@@ -773,6 +773,7 @@
 </head>
 <body>
 <div id="starfield"></div>
+<datalist id="worldCities"></datalist>
 <script>
 (function(){
   const field = document.getElementById('starfield');
@@ -838,7 +839,7 @@
       </div>
       <div class="form-group">
         <label>📍 જન્મ સ્થળ (POB)</label>
-        <input type="text" id="pob" placeholder="દા.ત. Ahmedabad, Gujarat" required>
+        <input type="text" id="pob" list="worldCities" oninput="fillLatLonFromCity(this,'lat','lon')" placeholder="ટાઈપ કરો... દા.ત. Ahmedabad" required>
       </div>
       <div class="form-group">
         <label>🌍 અક્ષાંશ (Latitude)</label>
@@ -966,7 +967,7 @@
       <div class="milan-card-title">🤵 વર (છોકરો)</div>
       <div class="form-group"><label>📅 જન્મ તારીખ</label><input type="date" id="b_dob"></div>
       <div class="form-group"><label>⏰ જન્મ સમય</label><input type="time" id="b_tob"></div>
-      <div class="form-group"><label>📍 જન્મ સ્થળ</label><input type="text" id="b_pob" placeholder="દા.ત. Ahmedabad"></div>
+      <div class="form-group"><label>📍 જન્મ સ્થળ</label><input type="text" id="b_pob" list="worldCities" oninput="fillLatLonFromCity(this,'b_lat','b_lon')" placeholder="ટાઈપ કરો... દા.ત. Ahmedabad"></div>
       <div class="form-group"><label>🌍 અક્ષાંશ</label><input type="number" id="b_lat" step="0.0001" placeholder="23.0225"></div>
       <div class="form-group"><label>🌍 રેખાંશ</label><input type="number" id="b_lon" step="0.0001" placeholder="72.5714"></div>
       <div class="form-group"><label>👤 નામ</label><input type="text" id="b_name" placeholder="વરનું નામ"></div>
@@ -975,7 +976,7 @@
       <div class="milan-card-title">👰 કન્યા (છોકરી)</div>
       <div class="form-group"><label>📅 જન્મ તારીખ</label><input type="date" id="g_dob"></div>
       <div class="form-group"><label>⏰ જન્મ સમય</label><input type="time" id="g_tob"></div>
-      <div class="form-group"><label>📍 જન્મ સ્થળ</label><input type="text" id="g_pob" placeholder="દા.ત. Ahmedabad"></div>
+      <div class="form-group"><label>📍 જન્મ સ્થળ</label><input type="text" id="g_pob" list="worldCities" oninput="fillLatLonFromCity(this,'g_lat','g_lon')" placeholder="ટાઈપ કરો... દા.ત. Ahmedabad"></div>
       <div class="form-group"><label>🌍 અક્ષાંશ</label><input type="number" id="g_lat" step="0.0001" placeholder="23.0225"></div>
       <div class="form-group"><label>🌍 રેખાંશ</label><input type="number" id="g_lon" step="0.0001" placeholder="72.5714"></div>
       <div class="form-group"><label>👤 નામ</label><input type="text" id="g_name" placeholder="કન્યાનું નામ"></div>
@@ -990,7 +991,21 @@
   </div>
 
   <div id="milanResults" style="display:none; margin-top:2rem;">
-    <div class="input-card tilt-3d" style="text-align:center;">
+    <div class="input-card tilt-3d">
+      <h2 style="text-align:center; margin-bottom:1rem;">🔮 વર-કન્યા કુંડળી</h2>
+      <div class="milan-grid">
+        <div style="text-align:center;">
+          <div style="font-family:'Yatra One',cursive; color:var(--gold); margin-bottom:0.5rem;" id="milanBoyName">🤵 વર</div>
+          <div id="milanChartBoy" style="display:flex; justify-content:center;"></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Yatra One',cursive; color:var(--gold); margin-bottom:0.5rem;" id="milanGirlName">👰 કન્યા</div>
+          <div id="milanChartGirl" style="display:flex; justify-content:center;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-card tilt-3d" style="margin-top:1.5rem; text-align:center;">
       <div class="gauge-wrap">
         <div class="gauge" id="milanGauge">
           <div class="gauge-value"><div class="num" id="milanScoreNum">0</div><div class="den">/ 36 ગુણ</div></div>
@@ -2855,6 +2870,110 @@ function toggleAnt(id) {
   if (btn) btn.textContent = el.classList.contains('open') ? '▼ અંતર્દશા' : '▶ અંતર્દશા';
 }
 
+// ==================== WORLDWIDE CITY DATABASE ====================
+const CITY_DB = [
+  // Gujarat
+  {n:'Ahmedabad, Gujarat, India',lat:23.0225,lon:72.5714},{n:'Surat, Gujarat, India',lat:21.1702,lon:72.8311},
+  {n:'Vadodara, Gujarat, India',lat:22.3072,lon:73.1812},{n:'Rajkot, Gujarat, India',lat:22.3039,lon:70.8022},
+  {n:'Bhavnagar, Gujarat, India',lat:21.7645,lon:72.1519},{n:'Jamnagar, Gujarat, India',lat:22.4707,lon:70.0577},
+  {n:'Gandhinagar, Gujarat, India',lat:23.2156,lon:72.6369},{n:'Junagadh, Gujarat, India',lat:21.5222,lon:70.4579},
+  {n:'Anand, Gujarat, India',lat:22.5645,lon:72.9289},{n:'Bharuch, Gujarat, India',lat:21.7051,lon:72.9959},
+  {n:'Mehsana, Gujarat, India',lat:23.5880,lon:72.3693},{n:'Nadiad, Gujarat, India',lat:22.6939,lon:72.8615},
+  {n:'Morbi, Gujarat, India',lat:22.8173,lon:70.8378},{n:'Porbandar, Gujarat, India',lat:21.6417,lon:69.6293},
+  {n:'Surendranagar, Gujarat, India',lat:22.7196,lon:71.6369},{n:'Navsari, Gujarat, India',lat:20.9463,lon:72.9270},
+  {n:'Valsad, Gujarat, India',lat:20.5992,lon:72.9342},{n:'Godhra, Gujarat, India',lat:22.7788,lon:73.6143},
+  {n:'Patan, Gujarat, India',lat:23.8493,lon:72.1266},{n:'Palanpur, Gujarat, India',lat:24.1722,lon:72.4383},
+  {n:'Vapi, Gujarat, India',lat:20.3714,lon:72.9047},{n:'Amreli, Gujarat, India',lat:21.6032,lon:71.2216},
+  {n:'Dwarka, Gujarat, India',lat:22.2394,lon:68.9678},{n:'Somnath, Gujarat, India',lat:20.8880,lon:70.4012},
+  // Maharashtra
+  {n:'Mumbai, Maharashtra, India',lat:19.0760,lon:72.8777},{n:'Pune, Maharashtra, India',lat:18.5204,lon:73.8567},
+  {n:'Nagpur, Maharashtra, India',lat:21.1458,lon:79.0882},{n:'Nashik, Maharashtra, India',lat:19.9975,lon:73.7898},
+  {n:'Thane, Maharashtra, India',lat:19.2183,lon:72.9781},{n:'Aurangabad, Maharashtra, India',lat:19.8762,lon:75.3433},
+  // North India
+  {n:'New Delhi, India',lat:28.6139,lon:77.2090},{n:'Gurgaon, Haryana, India',lat:28.4595,lon:77.0266},
+  {n:'Noida, Uttar Pradesh, India',lat:28.5355,lon:77.3910},{n:'Jaipur, Rajasthan, India',lat:26.9124,lon:75.7873},
+  {n:'Jodhpur, Rajasthan, India',lat:26.2389,lon:73.0243},{n:'Udaipur, Rajasthan, India',lat:24.5854,lon:73.7125},
+  {n:'Kota, Rajasthan, India',lat:25.2138,lon:75.8648},{n:'Ajmer, Rajasthan, India',lat:26.4499,lon:74.6399},
+  {n:'Lucknow, Uttar Pradesh, India',lat:26.8467,lon:80.9462},{n:'Kanpur, Uttar Pradesh, India',lat:26.4499,lon:80.3319},
+  {n:'Varanasi, Uttar Pradesh, India',lat:25.3176,lon:82.9739},{n:'Agra, Uttar Pradesh, India',lat:27.1767,lon:78.0081},
+  {n:'Prayagraj, Uttar Pradesh, India',lat:25.4358,lon:81.8463},{n:'Meerut, Uttar Pradesh, India',lat:28.9845,lon:77.7064},
+  {n:'Ghaziabad, Uttar Pradesh, India',lat:28.6692,lon:77.4538},{n:'Patna, Bihar, India',lat:25.5941,lon:85.1376},
+  {n:'Bhopal, Madhya Pradesh, India',lat:23.2599,lon:77.4126},{n:'Indore, Madhya Pradesh, India',lat:22.7196,lon:75.8577},
+  {n:'Gwalior, Madhya Pradesh, India',lat:26.2183,lon:78.1828},{n:'Jabalpur, Madhya Pradesh, India',lat:23.1815,lon:79.9864},
+  {n:'Chandigarh, India',lat:30.7333,lon:76.7794},{n:'Amritsar, Punjab, India',lat:31.6340,lon:74.8723},
+  {n:'Ludhiana, Punjab, India',lat:30.9010,lon:75.8573},{n:'Jalandhar, Punjab, India',lat:31.3260,lon:75.5762},
+  {n:'Dehradun, Uttarakhand, India',lat:30.3165,lon:78.0322},{n:'Haridwar, Uttarakhand, India',lat:29.9457,lon:78.1642},
+  {n:'Shimla, Himachal Pradesh, India',lat:31.1048,lon:77.1734},{n:'Srinagar, Jammu & Kashmir, India',lat:34.0837,lon:74.7973},
+  {n:'Jammu, India',lat:32.7266,lon:74.8570},
+  // South India
+  {n:'Bangalore, Karnataka, India',lat:12.9716,lon:77.5946},{n:'Mysore, Karnataka, India',lat:12.2958,lon:76.6394},
+  {n:'Hubli, Karnataka, India',lat:15.3647,lon:75.1240},{n:'Chennai, Tamil Nadu, India',lat:13.0827,lon:80.2707},
+  {n:'Coimbatore, Tamil Nadu, India',lat:11.0168,lon:76.9558},{n:'Madurai, Tamil Nadu, India',lat:9.9252,lon:78.1198},
+  {n:'Tiruchirappalli, Tamil Nadu, India',lat:10.7905,lon:78.7047},{n:'Hyderabad, Telangana, India',lat:17.3850,lon:78.4867},
+  {n:'Warangal, Telangana, India',lat:17.9689,lon:79.5941},{n:'Vijayawada, Andhra Pradesh, India',lat:16.5062,lon:80.6480},
+  {n:'Visakhapatnam, Andhra Pradesh, India',lat:17.6868,lon:83.2185},{n:'Thiruvananthapuram, Kerala, India',lat:8.5241,lon:76.9366},
+  {n:'Kochi, Kerala, India',lat:9.9312,lon:76.2673},{n:'Kozhikode, Kerala, India',lat:11.2588,lon:75.7804},
+  {n:'Panaji, Goa, India',lat:15.4909,lon:73.8278},{n:'Puducherry, India',lat:11.9416,lon:79.8083},
+  // East India
+  {n:'Kolkata, West Bengal, India',lat:22.5726,lon:88.3639},{n:'Howrah, West Bengal, India',lat:22.5958,lon:88.2636},
+  {n:'Bhubaneswar, Odisha, India',lat:20.2961,lon:85.8245},{n:'Cuttack, Odisha, India',lat:20.4625,lon:85.8828},
+  {n:'Guwahati, Assam, India',lat:26.1445,lon:91.7362},{n:'Ranchi, Jharkhand, India',lat:23.3441,lon:85.3096},
+  {n:'Jamshedpur, Jharkhand, India',lat:22.8046,lon:86.2029},{n:'Raipur, Chhattisgarh, India',lat:21.2514,lon:81.6296},
+  {n:'Shillong, Meghalaya, India',lat:25.5788,lon:91.8933},{n:'Imphal, Manipur, India',lat:24.8170,lon:93.9368},
+  {n:'Agartala, Tripura, India',lat:23.8315,lon:91.2868},{n:'Gangtok, Sikkim, India',lat:27.3389,lon:88.6065},
+  {n:'Itanagar, Arunachal Pradesh, India',lat:27.0844,lon:93.6053},{n:'Aizawl, Mizoram, India',lat:23.7271,lon:92.7176},
+  {n:'Kohima, Nagaland, India',lat:25.6751,lon:94.1086},{n:'Port Blair, Andaman & Nicobar, India',lat:11.6234,lon:92.7265},
+  // Middle East / Gulf (many NRI Gujaratis)
+  {n:'Dubai, UAE',lat:25.2048,lon:55.2708},{n:'Abu Dhabi, UAE',lat:24.4539,lon:54.3773},
+  {n:'Sharjah, UAE',lat:25.3463,lon:55.4209},{n:'Doha, Qatar',lat:25.2854,lon:51.5310},
+  {n:'Kuwait City, Kuwait',lat:29.3759,lon:47.9774},{n:'Manama, Bahrain',lat:26.2285,lon:50.5860},
+  {n:'Muscat, Oman',lat:23.5880,lon:58.3829},{n:'Riyadh, Saudi Arabia',lat:24.7136,lon:46.6753},
+  {n:'Jeddah, Saudi Arabia',lat:21.4858,lon:39.1925},
+  // UK / Europe
+  {n:'London, UK',lat:51.5072,lon:-0.1276},{n:'Manchester, UK',lat:53.4808,lon:-2.2426},
+  {n:'Birmingham, UK',lat:52.4862,lon:-1.8904},{n:'Leicester, UK',lat:52.6369,lon:-1.1398},
+  {n:'Paris, France',lat:48.8566,lon:2.3522},{n:'Berlin, Germany',lat:52.5200,lon:13.4050},
+  {n:'Frankfurt, Germany',lat:50.1109,lon:8.6821},{n:'Amsterdam, Netherlands',lat:52.3676,lon:4.9041},
+  {n:'Zurich, Switzerland',lat:47.3769,lon:8.5417},{n:'Rome, Italy',lat:41.9028,lon:12.4964},
+  {n:'Madrid, Spain',lat:40.4168,lon:-3.7038},
+  // North America
+  {n:'New York, USA',lat:40.7128,lon:-74.0060},{n:'Los Angeles, USA',lat:34.0522,lon:-118.2437},
+  {n:'Chicago, USA',lat:41.8781,lon:-87.6298},{n:'Houston, USA',lat:29.7604,lon:-95.3698},
+  {n:'San Francisco, USA',lat:37.7749,lon:-122.4194},{n:'Edison, New Jersey, USA',lat:40.5187,lon:-74.4121},
+  {n:'Atlanta, USA',lat:33.7490,lon:-84.3880},{n:'Dallas, USA',lat:32.7767,lon:-96.7970},
+  {n:'Boston, USA',lat:42.3601,lon:-71.0589},{n:'Washington DC, USA',lat:38.9072,lon:-77.0369},
+  {n:'Seattle, USA',lat:47.6062,lon:-122.3321},{n:'Toronto, Canada',lat:43.6532,lon:-79.3832},
+  {n:'Vancouver, Canada',lat:49.2827,lon:-123.1207},{n:'Calgary, Canada',lat:51.0447,lon:-114.0719},
+  {n:'Mississauga, Canada',lat:43.5890,lon:-79.6441},{n:'Brampton, Canada',lat:43.7315,lon:-79.7624},
+  // Africa
+  {n:'Nairobi, Kenya',lat:-1.2921,lon:36.8219},{n:'Mombasa, Kenya',lat:-4.0435,lon:39.6682},
+  {n:'Johannesburg, South Africa',lat:-26.2041,lon:28.0473},{n:'Lagos, Nigeria',lat:6.5244,lon:3.3792},
+  {n:'Cairo, Egypt',lat:30.0444,lon:31.2357},{n:'Kampala, Uganda',lat:0.3476,lon:32.5825},
+  {n:'Dar es Salaam, Tanzania',lat:-6.7924,lon:39.2083},
+  // Asia Pacific
+  {n:'Singapore',lat:1.3521,lon:103.8198},{n:'Kuala Lumpur, Malaysia',lat:3.1390,lon:101.6869},
+  {n:'Bangkok, Thailand',lat:13.7563,lon:100.5018},{n:'Hong Kong',lat:22.3193,lon:114.1694},
+  {n:'Tokyo, Japan',lat:35.6762,lon:139.6503},{n:'Shanghai, China',lat:31.2304,lon:121.4737},
+  {n:'Sydney, Australia',lat:-33.8688,lon:151.2093},{n:'Melbourne, Australia',lat:-37.8136,lon:144.9631},
+  {n:'Brisbane, Australia',lat:-27.4698,lon:153.0251},{n:'Perth, Australia',lat:-31.9505,lon:115.8605},
+  {n:'Auckland, New Zealand',lat:-36.8485,lon:174.7633}
+];
+
+(function initCityAutocomplete(){
+  const dl = document.getElementById('worldCities');
+  if(!dl) return;
+  dl.innerHTML = CITY_DB.map(c => `<option value="${c.n}">`).join('');
+})();
+
+function fillLatLonFromCity(inputEl, latId, lonId){
+  const val = inputEl.value.trim().toLowerCase();
+  const city = CITY_DB.find(c => c.n.toLowerCase() === val);
+  if(city){
+    document.getElementById(latId).value = city.lat;
+    document.getElementById(lonId).value = city.lon;
+  }
+}
+
 // ==================== KUNDALI MILAN (ASHTAKOOT GUNA MILAN) ====================
 
 const RASHI_LORD_IDX = [2,5,3,1,0,3,5,2,4,6,6,4]; // index into PLANETS7 below, per rashi 0-11
@@ -2892,7 +3011,21 @@ function personChart(dob, tob, lat, lon){
   const moonLon = positions['Moon'];
   const rashi = getRashi(moonLon);
   const nak = getNakshatra(moonLon);
-  return { rashi, nak, moonLon };
+  return { rashi, nak, moonLon, positions };
+}
+
+let __chartIdCounter = 0;
+function buildMiniNorthChart(positions, size){
+  const lagnaRashi = getRashi(positions['Lagna']);
+  const houseContents = Array.from({length:12}, () => []);
+  const pKeys = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+  const pShort = {Sun:'સૂ',Moon:'ચં',Mars:'મં',Mercury:'બુ',Jupiter:'ગુ',Venus:'શુ',Saturn:'શ',Rahu:'રા',Ketu:'કે'};
+  pKeys.forEach(p => { houseContents[(getRashi(positions[p]) - lagnaRashi + 12) % 12].push(pShort[p]); });
+  let svg = buildNorthIndianSVG(size || 260, 10, houseContents, lagnaRashi);
+  // Avoid duplicate SVG <defs> id="ng" collisions when multiple charts render on one page
+  const uid = 'ng' + (++__chartIdCounter);
+  svg = svg.replace(/id="ng"/g, 'id="'+uid+'"').replace(/url\(#ng\)/g, 'url(#'+uid+')');
+  return svg;
 }
 
 function tithiSafeMod(n, m){ return ((n % m) + m) % m; }
@@ -2913,6 +3046,7 @@ function calculateMilan(){
   document.getElementById('milanResults').style.display = 'none';
 
   setTimeout(() => {
+   try {
     const boy = personChart(bDob, bTob, bLat, bLon);
     const girl = personChart(gDob, gTob, gLat, gLon);
 
@@ -2983,6 +3117,14 @@ function calculateMilan(){
 
     const total = rows.reduce((s,r)=>s+r[3], 0);
 
+    // Mini kundali charts
+    const bName = document.getElementById('b_name').value || 'વર';
+    const gName = document.getElementById('g_name').value || 'કન્યા';
+    document.getElementById('milanBoyName').textContent = '🤵 ' + bName;
+    document.getElementById('milanGirlName').textContent = '👰 ' + gName;
+    document.getElementById('milanChartBoy').innerHTML = buildMiniNorthChart(boy.positions, 240);
+    document.getElementById('milanChartGirl').innerHTML = buildMiniNorthChart(girl.positions, 240);
+
     // Render table
     const tbody = document.getElementById('milanTableBody');
     tbody.innerHTML = rows.map(r => `
@@ -3015,6 +3157,11 @@ function calculateMilan(){
 
     document.getElementById('milanLoading').style.display = 'none';
     document.getElementById('milanResults').style.display = 'block';
+   } catch(err) {
+    document.getElementById('milanLoading').style.display = 'none';
+    alert('મિલન ગણતરીમાં ભૂલ આવી: ' + err.message + '\n\nકૃપા કરી બંને જન્મ વિગત ચકાસો અથવા પેજ રિફ્રેશ કરીને ફરી પ્રયત્ન કરો.');
+    console.error('calculateMilan error:', err);
+   }
   }, 300);
 }
 
