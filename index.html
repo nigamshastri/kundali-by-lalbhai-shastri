@@ -465,6 +465,121 @@
     box-shadow: 0 5px 20px rgba(255,107,26,0.1);
   }
 
+  /* Life Conclusion Report */
+  .conclusion-wrap {
+    background: linear-gradient(135deg, rgba(45,21,5,0.85), rgba(26,10,0,0.95));
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,160,23,0.15);
+  }
+
+  .conclusion-intro {
+    font-size: 0.92rem;
+    color: rgba(255,248,240,0.75);
+    line-height: 1.9;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(212,160,23,0.2);
+  }
+
+  .conclusion-section {
+    margin-bottom: 2rem;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .conclusion-section-title {
+    font-family: 'Yatra One', cursive;
+    font-size: 1.3rem;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(212,160,23,0.25);
+  }
+
+  .conclusion-section p {
+    font-size: 0.9rem;
+    color: rgba(255,248,240,0.82);
+    line-height: 1.95;
+    margin-bottom: 0.9rem;
+    text-align: justify;
+  }
+
+  .conclusion-period-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 0.8rem 0 1.2rem;
+  }
+
+  .conclusion-period {
+    background: rgba(0,0,0,0.22);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.65rem 1rem;
+  }
+
+  .conclusion-period.caution { border-left-color: #D14545; }
+  .conclusion-period.favorable { border-left-color: #4CAF50; }
+  .conclusion-period.effort { border-left-color: #4A90D9; }
+
+  .conclusion-period-head {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--light-gold);
+    margin-bottom: 0.25rem;
+  }
+
+  .conclusion-period-body {
+    font-size: 0.85rem;
+    color: rgba(255,248,240,0.72);
+    line-height: 1.75;
+  }
+
+  .conclusion-final {
+    background: rgba(200,120,0,0.1);
+    border: 1px solid rgba(200,120,0,0.3);
+    border-radius: 10px;
+    padding: 1.3rem 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .conclusion-disclaimer {
+    font-size: 0.75rem;
+    color: rgba(255,248,240,0.5);
+    line-height: 1.7;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(212,160,23,0.25);
+  }
+
+  .print-btn {
+    display: inline-block;
+    margin: 1.2rem auto 0;
+    background: linear-gradient(135deg, var(--gold), var(--accent));
+    color: var(--dark-bg);
+    border: none;
+    border-radius: 30px;
+    padding: 0.7rem 1.8rem;
+    font-family: 'Noto Sans Gujarati', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(212,160,23,0.3);
+  }
+
+  @media print {
+    .header, .input-section, .print-btn, .ornament-divider, nav, .tab-nav { display: none !important; }
+    .conclusion-section { page-break-after: always; }
+    body { background: #fff; color: #000; }
+    .conclusion-wrap, .conclusion-period, .conclusion-final { background: #fff; color: #000; border-color: #999; }
+    .conclusion-section p, .conclusion-period-body, .conclusion-intro { color: #111; }
+  }
+
   .pred-house {
     font-family: 'Yatra One', cursive;
     color: var(--saffron);
@@ -1217,6 +1332,13 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Predictions -->
   <div class="section-header"><h2>🔮 ભવિષ્ય કથન</h2></div>
   <div class="predictions-grid" id="predictionsGrid"></div>
+
+  <!-- Full Life Conclusion Report -->
+  <div class="section-header"><h2>📜 સંપૂર્ણ જીવન નિષ્કર્ષ (Complete Life Conclusion)</h2></div>
+  <div class="conclusion-wrap" id="lifeConclusionSection"></div>
+  <div style="text-align:center;">
+    <button class="print-btn" onclick="window.print()">🖨️ નિષ્કર્ષ પ્રિન્ટ / PDF કરો</button>
+  </div>
 
   <div class="ornament-divider">॥ ॐ तत् सत् ॥</div>
 
@@ -2436,6 +2558,319 @@ function getPredictions(positions, lagnaRashi) {
   return preds;
 }
 
+// ==================== FULL LIFE CONCLUSION REPORT ====================
+// This engine uses functional benefic/malefic classification per ascendant
+// (not a fixed planet list), planetary dignity (exalted/debilitated/own),
+// classical aspects (drishti), and Mahadasha+Antardasha combinations —
+// not just whole-Mahadasha blocks — for the event-specific sections
+// (health, accident, marriage) so windows are as narrow and specific
+// as traditional dasha-based prediction requires.
+
+const RASHI_LORD = ['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
+
+const RASHI_TRAITS_LONG = [
+  'મેષ લગ્ન વ્યક્તિને સાહસિક, ઉત્સાહી અને નેતૃત્વ-પ્રિય બનાવે છે. સ્વભાવે ઝડપી નિર્ણય લેનાર અને સ્પષ્ટવક્તા હોય છે, પરંતુ ઉતાવળ અને ગુસ્સા પર નિયંત્રણ રાખવું જરૂરી છે.',
+  'વૃષભ લગ્ન વ્યક્તિને સ્થિર, ધીરજવાન અને ભૌતિક સુખ-પ્રિય બનાવે છે. સૌંદર્ય, આરામ અને સ્થાયી સંબંધો પ્રત્યે વિશેષ લગાવ રહે છે, પરંતુ હઠાગ્રહ ટાળવો હિતાવહ.',
+  'મિથુન લગ્ન વ્યક્તિને બુદ્ધિશાળી, વાતચીતમાં કુશળ અને બહુમુખી પ્રતિભા-સંપન્ન બનાવે છે. નવું શીખવાની ધગશ રહે છે, પરંતુ મન ચંચળ ન બને તેનું ધ્યાન રાખવું.',
+  'કર્ક લગ્ન વ્યક્તિને લાગણીશીલ, ઘર-પ્રેમી અને સંભાળ રાખનાર બનાવે છે. કુટુંબ પ્રત્યે ઊંડો સ્નેહ રહે છે, પરંતુ મનોભાવોમાં વધુ પડતી વધઘટ ટાળવી.',
+  'સિંહ લગ્ન વ્યક્તિને તેજસ્વી, આત્મવિશ્વાસુ અને રાજસી સ્વભાવનો બનાવે છે. નેતૃત્વ ગુણ સ્વાભાવિક હોય છે, પરંતુ અહંકાર પર નિયંત્રણ જરૂરી.',
+  'કન્યા લગ્ન વ્યક્તિને વિવેકી, ઝીણવટભર્યો અને કાર્યકુશળ બનાવે છે. વિશ્લેષણાત્મક બુદ્ધિ પ્રબળ હોય છે, પરંતુ વધુ પડતી ટીકા-વૃત્તિ ટાળવી.',
+  'તુલા લગ્ન વ્યક્તિને સમતોલ, ન્યાયપ્રિય અને કળા-રસિક બનાવે છે. સંબંધોમાં સંવાદિતા શોધનાર સ્વભાવ હોય છે, પરંતુ નિર્ણય-શક્તિમાં દ્વિધા ટાળવી.',
+  'વૃશ્ચિક લગ્ન વ્યક્તિને ગંભીર, રહસ્યમય અને દૃઢ-નિશ્ચયી બનાવે છે. ઊંડાણથી વિચારવાની શક્તિ હોય છે, પરંતુ શંકા-વૃત્તિ અને વેર-ભાવ ટાળવાં.',
+  'ધનુ લગ્ન વ્યક્તિને આશાવાદી, સત્યસંગી અને સ્વતંત્રતા-પ્રિય બનાવે છે. જ્ઞાન અને તત્વજ્ઞાન પ્રત્યે રુચિ રહે છે, પરંતુ વધુ પડતી બેફિકરાઈ ટાળવી.',
+  'મકર લગ્ન વ્યક્તિને મહેનતુ, વ્યવહારુ અને લક્ષ્ય-કેન્દ્રિત બનાવે છે. ધીરજપૂર્વક સફળતા મેળવવાની ક્ષમતા હોય છે, પરંતુ વધુ પડતી ગંભીરતા ટાળવી.',
+  'કુંભ લગ્ન વ્યક્તિને મૌલિક, માનવ-સેવા ભાવનાવાળો અને પ્રગતિશીલ બનાવે છે. નવીન વિચારો પ્રત્યે ખેંચાણ રહે છે, પરંતુ જિદ્દી સ્વભાવ ટાળવો.',
+  'મીન લગ્ન વ્યક્તિને સંવેદનશીલ, કલ્પનાશીલ અને આધ્યાત્મિક બનાવે છે. કરુણા અને સહાનુભૂતિ સ્વાભાવિક હોય છે, પરંતુ વધુ પડતી ભાવુકતા ટાળવી.'
+];
+
+function houseOfPlanet(planetLon, lagnaRashi) {
+  return (getRashi(planetLon) - lagnaRashi + 12) % 12 + 1;
+}
+
+function houseLordPlanet(houseNum, lagnaRashi) {
+  return RASHI_LORD[(lagnaRashi + houseNum - 1) % 12];
+}
+
+function getRuledHouses(planet, lagnaRashi) {
+  const arr = [];
+  for (let h = 1; h <= 12; h++) if (houseLordPlanet(h, lagnaRashi) === planet) arr.push(h);
+  return arr;
+}
+
+// Functional nature per THIS ascendant — not a fixed planet list.
+// Lords of 1,5,9 (trikona) = functionally benefic; lords of 6,8,12 (dusthana) = functionally malefic.
+// Rahu/Ketu (shadow points, no sign lordship) are treated as natural malefics/karmic significators.
+function functionalNature(planet, lagnaRashi) {
+  if (planet === 'Rahu' || planet === 'Ketu') return 'malefic';
+  const ruled = getRuledHouses(planet, lagnaRashi);
+  if (ruled.some(h => [6,8,12].includes(h))) return 'malefic';
+  if (ruled.some(h => [1,5,9].includes(h))) return 'benefic';
+  return 'neutral';
+}
+
+const EXALT_RASHI = {Sun:0, Moon:1, Mars:9, Mercury:5, Jupiter:3, Venus:11, Saturn:6};
+const DEBIL_RASHI = {Sun:6, Moon:7, Mars:3, Mercury:11, Jupiter:9, Venus:5, Saturn:0};
+const OWN_RASHIS  = {Sun:[4], Moon:[3], Mars:[0,7], Mercury:[2,5], Jupiter:[8,11], Venus:[1,6], Saturn:[9,10]};
+
+function planetDignity(planet, lon) {
+  if (!(planet in EXALT_RASHI)) return 'neutral';
+  const r = getRashi(lon);
+  if (r === EXALT_RASHI[planet]) return 'exalted';
+  if (r === DEBIL_RASHI[planet]) return 'debilitated';
+  if (OWN_RASHIS[planet] && OWN_RASHIS[planet].includes(r)) return 'own';
+  return 'neutral';
+}
+
+function dignityNote(planet, lon) {
+  const d = planetDignity(planet, lon);
+  const pg = planetGu(planet);
+  if (d === 'exalted') return pg + ' ઉચ્ચનો હોવાથી પરિણામ પ્રબળ મળે છે';
+  if (d === 'debilitated') return pg + ' નીચનો હોવાથી પરિણામ નબળું/વિપરીત મળી શકે';
+  if (d === 'own') return pg + ' સ્વ-રાશિમાં હોવાથી બળવાન છે';
+  return '';
+}
+
+// Classical special aspects (drishti): every planet aspects the 7th house from
+// itself; Mars additionally aspects the 4th & 8th; Jupiter the 5th & 9th; Saturn the 3rd & 10th.
+function getAspectedHouses(planet, house) {
+  const mod = h => ((h - 1) % 12) + 1;
+  const asp = [mod(house + 6)];
+  if (planet === 'Mars')    asp.push(mod(house + 3), mod(house + 7));
+  if (planet === 'Jupiter') asp.push(mod(house + 4), mod(house + 8));
+  if (planet === 'Saturn')  asp.push(mod(house + 2), mod(house + 9));
+  return asp;
+}
+
+function afflictsHouses(planet, house, targetHouses) {
+  if (targetHouses.includes(house)) return true;
+  return getAspectedHouses(planet, house).some(h => targetHouses.includes(h));
+}
+
+function lc_periodBlock(cls, headText, text) {
+  return `<div class="conclusion-period ${cls}">
+    <div class="conclusion-period-head">${headText}</div>
+    <div class="conclusion-period-body">${text}</div>
+  </div>`;
+}
+
+// ---- Health & Accident: Mahadasha + Antardasha combination analysis ----
+function lc_buildHealthAccident(vimDashas, positions, houses, lagnaRashi) {
+  let healthBlocks = '', accidentBlocks = '';
+  vimDashas.forEach(d => {
+    const mdP = d.planet, mdH = houses[mdP];
+    const mdFn = functionalNature(mdP, lagnaRashi);
+    const ants = getAntardasha(d);
+    let hFlagged = [], aFlagged = [];
+    ants.forEach(a => {
+      const adP = a.planet, adH = houses[adP];
+      const adFn = functionalNature(adP, lagnaRashi);
+      const range = formatDate(a.start) + ' – ' + formatDate(a.end);
+      const head = planetGu(mdP) + ' મહાદશા / ' + planetGu(adP) + ' અંતર્દશા — ' + range;
+
+      const healthHit = (mdFn === 'malefic' && afflictsHouses(mdP, mdH, [6,8,12])) ||
+                         (adFn === 'malefic' && afflictsHouses(adP, adH, [6,8,12]));
+      if (healthHit) {
+        const cautionPlanets = {
+          Saturn: 'હાડકાં, સાંધા અથવા દીર્ઘકાલીન બીમારી પ્રત્યે સાવધાની રાખવી',
+          Mars:   'રક્ત-સંબંધિત તકલીફ, ઈજા અથવા તાવ પ્રત્યે સાવધાની રાખવી',
+          Rahu:   'અસ્પષ્ટ અથવા મુશ્કેલ-નિદાન બીમારી પ્રત્યે સાવધાની રાખવી',
+          Ketu:   'અચાનક તકલીફ અથવા શસ્ત્રક્રિયા સંભવ',
+          Sun:    'હૃદય, આંખ કે તાવ-સંબંધિત તકલીફ પ્રત્યે સાવધાની રાખવી',
+          Mercury:'નર્વસ સિસ્ટમ કે ત્વચા સંબંધિત નાની તકલીફ શક્ય',
+          Venus:  'કિડની કે પ્રજનન-તંત્ર સંબંધિત તકલીફ પ્રત્યે ધ્યાન રાખવું',
+          Moon:   'માનસિક તણાવ, ઊંઘ કે પાચન સંબંધિત તકલીફ પ્રત્યે ધ્યાન રાખવું',
+          Jupiter:'લિવર કે વજન-સંબંધિત તકલીફ પ્રત્યે ધ્યાન રાખવું'
+        };
+        const trigger = mdFn === 'malefic' && afflictsHouses(mdP, mdH, [6,8,12]) ? mdP : adP;
+        let txt = (cautionPlanets[trigger] || 'સ્વાસ્થ્ય પ્રત્યે વિશેષ સાવધાની રાખવી') + '. યોગ, પ્રાણાયામ અને સમયસર તબીબી તપાસ લાભદાયી.';
+        const dn = dignityNote(trigger, positions[trigger]);
+        if (dn) txt += ' (' + dn + '.)';
+        hFlagged.push(lc_periodBlock('caution', head, txt));
+      }
+
+      const NATURAL_MALEFIC = ['Saturn','Mars','Rahu','Ketu'];
+      const accidentHit = (NATURAL_MALEFIC.includes(mdP) && afflictsHouses(mdP, mdH, [3,6,8,12])) ||
+                           (NATURAL_MALEFIC.includes(adP) && afflictsHouses(adP, adH, [3,6,8,12]));
+      if (accidentHit) {
+        const trigger = NATURAL_MALEFIC.includes(mdP) && afflictsHouses(mdP, mdH, [3,6,8,12]) ? mdP : adP;
+        let txt = 'વાહન-ચલાવવામાં, ઊંચાઈ પરના કામમાં અને તીક્ષ્ણ કે અગ્નિ-સંબંધિત સાધનો સાથે કામ કરવામાં વિશેષ સાવધાની રાખવી. ઉતાવળ અને જોખમી સાહસ ટાળવાં.';
+        const dn = dignityNote(trigger, positions[trigger]);
+        if (dn) txt += ' (' + dn + '.)';
+        aFlagged.push(lc_periodBlock('caution', head, txt));
+      }
+    });
+
+    const mdRange = formatDate(d.start) + ' – ' + formatDate(d.end);
+    const mdHead = planetGu(mdP) + ' મહાદશા (સંપૂર્ણ) — ' + mdRange;
+    healthBlocks += hFlagged.length ? hFlagged.join('') :
+      lc_periodBlock('', mdHead, 'આ સમગ્ર મહાદશા દરમિયાન કોઈ ચોક્કસ અંતર્દશા-સંયોજન સ્વાસ્થ્ય-પીડક જણાતું નથી; સામાન્ય આહાર-વિહાર જાળવવો પૂરતું.');
+    accidentBlocks += aFlagged.length ? aFlagged.join('') :
+      lc_periodBlock('', mdHead, 'આ સમગ્ર મહાદશા દરમિયાન અકસ્માતનું કોઈ ચોક્કસ અંતર્દશા-સંયોજન જણાતું નથી; સામાન્ય સાવધાની પૂરતી.');
+  });
+  return { healthBlocks, accidentBlocks };
+}
+
+// ---- Marriage: Mahadasha + Antardasha combination analysis ----
+function lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2) {
+  let blocks = '';
+  vimDashas.forEach(d => {
+    const mdP = d.planet;
+    const ants = getAntardasha(d);
+    let flagged = [];
+    ants.forEach(a => {
+      const adP = a.planet;
+      const isSig = p => p === 'Venus' || p === lord7 || p === lord2;
+      if (isSig(mdP) || isSig(adP)) {
+        const range = formatDate(a.start) + ' – ' + formatDate(a.end);
+        const head = planetGu(mdP) + ' મહાદશા / ' + planetGu(adP) + ' અંતર્દશા — ' + range;
+        const trigger = isSig(mdP) ? mdP : adP;
+        let role = trigger === 'Venus' ? 'શુક્ર (કારક ગ્રહ)' : trigger === lord7 ? 'સપ્તમેશ' : 'દ્વિતીયેશ';
+        let txt = role + ' ની સંડોવણી હોવાથી આ ચોક્કસ ગાળો વિવાહ, સગાઈ કે દામ્પત્ય જીવનના મહત્વના નિર્ણય માટે અનુકૂળ ગણાય.';
+        const dn = dignityNote(trigger, positions[trigger]);
+        if (dn) txt += ' (' + dn + '.)';
+        flagged.push(lc_periodBlock('favorable', head, txt));
+      }
+    });
+    const mdRange = formatDate(d.start) + ' – ' + formatDate(d.end);
+    const mdHead = planetGu(mdP) + ' મહાદશા (સંપૂર્ણ) — ' + mdRange;
+    blocks += flagged.length ? flagged.join('') :
+      lc_periodBlock('', mdHead, 'આ મહાદશામાં શુક્ર, સપ્તમેશ કે દ્વિતીયેશનું સીધું અંતર્દશા-સંયોજન નથી; દામ્પત્ય જીવન સ્થિર રહેશે, મોટો ફેરફાર અસંભવ.');
+  });
+  return blocks;
+}
+
+function lc_toughText(p, lagnaRashi, lord6, lord8, lord12, positions) {
+  const fn = functionalNature(p, lagnaRashi);
+  if (fn === 'malefic') {
+    let txt = 'આ મહાદશા સંઘર્ષ, વિલંબ અથવા અવરોધોની બની શકે છે — ધીરજ, પરિશ્રમ અને સકારાત્મક વિચારસરણી દ્વારા આ તબક્કો પાર કરી શકાય છે. મોટા નિર્ણયો ઉતાવળે ન લેવા.';
+    const dn = dignityNote(p, positions[p]);
+    if (dn) txt += ' (' + dn + '.)';
+    return txt;
+  }
+  if (fn === 'benefic') return 'આ મહાદશા સામાન્ય રીતે અનુકૂળ અને પ્રમાણમાં સરળ રહેશે; આવેલી નાની-મોટી મુશ્કેલી પણ ઝડપથી ઉકલશે.';
+  return 'આ મહાદશા મિશ્ર ફળદાયી રહેશે — સારા અને પડકારજનક બંને પ્રકારના તબક્કા આવી શકે.';
+}
+
+function lc_hardWorkText(p, lord6, lord10, positions) {
+  const map = {
+    Saturn:  'ધીરજ, શિસ્ત અને સતત મહેનતથી ધીમે-ધીમે પણ મજબૂત પ્રગતિ મળશે — ફળ મોડું પણ સ્થાયી.',
+    Mars:    'ઊર્જા, સાહસ અને પુરુષાર્થથી કાર્ય સિદ્ધ થશે — સ્પર્ધામાં આગળ રહેવા સતત મહેનત જરૂરી.',
+    Sun:     'કારકિર્દી અને પ્રતિષ્ઠા માટે મહેનત જરૂરી બનશે — અધિકારીઓ કે સરકારી તંત્ર સાથે સંબંધ મહત્વના.',
+    Mercury: 'બુદ્ધિ, વ્યાપાર-કૌશલ્ય અને અભ્યાસ દ્વારા મહેનતનું ફળ મળશે.'
+  };
+  let txt;
+  if (map[p]) txt = map[p];
+  else if (p === lord10) txt = 'વ્યવસાય કે કારકિર્દી ક્ષેત્રે વિશેષ મહેનત અને પ્રયત્નનો સમય — સફળતા મહેનતના પ્રમાણમાં જ મળશે.';
+  else if (p === lord6) txt = 'સેવા, નોકરી કે સ્પર્ધાત્મક ક્ષેત્રે મહેનતનો સમય — ધીરજથી કામ કરવાથી લાભ.';
+  else txt = 'આ સમય પ્રમાણમાં ઓછી મહેનતે કાર્ય પાર પડે તેવો રહેશે.';
+  const dn = dignityNote(p, positions[p]);
+  if (dn) txt += ' (' + dn + '.)';
+  return txt;
+}
+
+function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati) {
+  const GRAHAS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+  const houses = {};
+  GRAHAS.forEach(p => { houses[p] = houseOfPlanet(positions[p], lagnaRashi); });
+
+  const lord2  = houseLordPlanet(2, lagnaRashi);
+  const lord6  = houseLordPlanet(6, lagnaRashi);
+  const lord7  = houseLordPlanet(7, lagnaRashi);
+  const lord8  = houseLordPlanet(8, lagnaRashi);
+  const lord10 = houseLordPlanet(10, lagnaRashi);
+  const lord12 = houseLordPlanet(12, lagnaRashi);
+
+  const moonRashi = getRashi(positions['Moon']);
+  const sunRashi  = getRashi(positions['Sun']);
+
+  // ---------- Section 1: Behaviour / Personality ----------
+  const behaviourHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">🧘 ૧. સ્વભાવ અને વ્યક્તિત્વ</div>
+      <p>${RASHI_TRAITS_LONG[lagnaRashi]}</p>
+      <p>ચંદ્ર રાશિ ${RASHIS_GU[moonRashi]} હોવાથી ${name} નું મન અને લાગણીઓ આ રાશિના ગુણોથી ઊંડાં પ્રભાવિત રહે છે — રોજિંદા સ્વભાવ, પ્રતિભાવ અને આંતરિક વિચારસરણી પર તેની છાપ સ્પષ્ટ દેખાય છે. સૂર્ય રાશિ ${RASHIS_GU[sunRashi]} હોવાથી આત્મવિશ્વાસ, ઈચ્છાશક્તિ અને જીવન પ્રત્યેનો અભિગમ ઘડાય છે.</p>
+      <p>એકંદરે, લગ્ન, ચંદ્ર અને સૂર્યના સંયોજનથી ${name} નું વ્યક્તિત્વ સંતુલિત અને પરિપક્વ બને છે. સમય જતાં અનુભવ સાથે સ્વભાવમાં વધુ સ્થિરતા અને સમજણ આવશે.</p>
+    </div>`;
+
+  // ---------- Section 2 & 3: Health & Accident (Dasha+Antardasha combination) ----------
+  const { healthBlocks, accidentBlocks } = lc_buildHealthAccident(vimDashas, positions, houses, lagnaRashi);
+  const healthAccidentHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">🩺 ૨. આરોગ્ય વિચાર (મહાદશા-અંતર્દશા સંયોજન અનુસાર)</div>
+      <p>માત્ર મહાદશા નહીં, પરંતુ મહાદશા-સ્વામી અને અંતર્દશા-સ્વામી બંનેની આ લગ્ન-કુંડળી પ્રમાણેની કાર્યકારી (functional) પ્રકૃતિ, ષષ્ઠ-અષ્ટમ-દ્વાદશ ભાવ પરની સ્થિતિ/દૃષ્ટિ અને ગ્રહની અવસ્થા (ઉચ્ચ/નીચ/સ્વ-રાશિ) — આ બધાના સંયોજનથી નીચેના ચોક્કસ સમયગાળા તારવેલ છે. જ્યાં કોઈ ચોક્કસ સંયોજન અસર કરતું નથી ત્યાં તે મહાદશા સામાન્ય ગણેલ છે.</p>
+      <div class="conclusion-period-list">${healthBlocks}</div>
+    </div>
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">⚠️ ૩. અકસ્માત સંભાવના (મહાદશા-અંતર્દશા સંયોજન અનુસાર)</div>
+      <p>અકસ્માતનો વિચાર કુદરતી પાપ ગ્રહો (મંગળ, શનિ, રાહુ, કેતુ) પૈકી કોઈ મહાદશા કે અંતર્દશા સ્વામી તૃતીય, ષષ્ઠ, અષ્ટમ કે દ્વાદશ ભાવમાં સ્થિત હોય અથવા તેના પર દૃષ્ટિ નાખતો હોય ત્યારે જ કરવામાં આવ્યો છે — આથી સામાન્ય મહાદશા-સ્તરના અંદાજ કરતાં આ યાદી વધુ ચોક્કસ છે.</p>
+      <div class="conclusion-period-list">${accidentBlocks}</div>
+    </div>`;
+
+  // ---------- Section 4: Marriage across full life ----------
+  const marriageBlocks = lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2);
+  const marriageHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">💍 ૪. વિવાહ અને દામ્પત્ય જીવન — સંપૂર્ણ આયુષ્યકાળ</div>
+      <p>સપ્તમ ભાવ ${RASHIS_GU[(lagnaRashi+6)%12]} રાશિમાં આવે છે, જેનો સ્વામી ${planetGu(lord7)} છે; શુક્ર (કારક ગ્રહ) ${houses['Venus']}મા ભાવમાં સ્થિત છે. નીચે સંપૂર્ણ જીવનના મહાદશા-ક્રમમાં, જ્યાં પણ શુક્ર, સપ્તમેશ કે દ્વિતીયેશ મહાદશા અથવા અંતર્દશા સ્વામી તરીકે આવે છે તે ચોક્કસ ગાળા વિવાહ-સંબંધિત મહત્વના સમય તરીકે લીલા ચિહ્ન સાથે દર્શાવેલ છે.</p>
+      <div class="conclusion-period-list">${marriageBlocks}</div>
+    </div>`;
+
+  // ---------- Section 5: Tough time (functional-nature based, mahadasha level) ----------
+  let toughBlocks = '';
+  vimDashas.forEach(d => {
+    const range = formatDate(d.start) + ' – ' + formatDate(d.end);
+    const pg = planetGu(d.planet);
+    const isTough = functionalNature(d.planet, lagnaRashi) === 'malefic';
+    toughBlocks += lc_periodBlock(isTough ? 'caution' : '', pg + ' મહાદશા — ' + range, lc_toughText(d.planet, lagnaRashi, lord6, lord8, lord12, positions));
+  });
+  const sadeSatiFuture = (sadeSati && sadeSati.occurrences) ? sadeSati.occurrences.filter(o => !o.isPreBirth && !o.isPast) : [];
+  const sadeSatiHtml = sadeSatiFuture.length ? `<p>વધુમાં, સાડેસાતીના ${sadeSatiFuture.length} સમયગાળા (${sadeSatiFuture.map(o=>o.startStr+' – '+o.endStr).join(', ')}) દરમિયાન માનસિક તણાવ, જવાબદારીમાં વધારો અને ધીરજની કસોટી થઈ શકે — આ સમયે શનિ-સંબંધિત ઉપાય (શનિવારે તેલ-દાન, હનુમાન ચાલીસા) લાભદાયી.</p>` : '';
+  const toughHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">🌩️ ૫. સંઘર્ષ અને કઠિન સમય</div>
+      <p>અહીં "કાર્યકારી (functional) અશુભ ગ્રહ" ની વ્યાખ્યા આ ચોક્કસ લગ્ન-કુંડળી પ્રમાણે કરેલ છે — એટલે કે જે ગ્રહ ષષ્ઠ, અષ્ટમ કે દ્વાદશ ભાવનો સ્વામી હોય તે જ અહીં અશુભ ગણેલ છે (શનિ-મંગળ દરેક કુંડળીમાં સરખા અશુભ નથી હોતા). આ પદ્ધતિ સામાન્ય ફિક્સ-લિસ્ટ કરતાં વધુ ચોકસાઈભરી છે.</p>
+      <div class="conclusion-period-list">${toughBlocks}</div>
+      ${sadeSatiHtml}
+    </div>`;
+
+  // ---------- Section 6: Hard work / effort ----------
+  let hardWorkBlocks = '';
+  vimDashas.forEach(d => {
+    const range = formatDate(d.start) + ' – ' + formatDate(d.end);
+    const pg = planetGu(d.planet);
+    const isEffort = ['Saturn','Mars'].includes(d.planet) || d.planet===lord10 || d.planet===lord6;
+    hardWorkBlocks += lc_periodBlock(isEffort ? 'effort' : '', pg + ' મહાદશા — ' + range, lc_hardWorkText(d.planet, lord6, lord10, positions));
+  });
+  const hardWorkHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">💪 ૬. મહેનત, ઉદ્યમ અને પરિશ્રમનો સમય</div>
+      <p>દશમ ભાવ (કર્મ/વ્યવસાય) અને ષષ્ઠ ભાવ (સ્પર્ધા/સેવા) ના સ્વામી તથા શનિ-મંગળની મહાદશા મહેનત અને પુરુષાર્થના સમયગાળા દર્શાવે છે. જે સમયગાળામાં વિશેષ મહેનતની જરૂર છે તે ભૂરા ચિહ્ન સાથે દર્શાવેલ છે — આ સમય દરમિયાન કરેલી મહેનત ભવિષ્યમાં ચોક્કસ ફળ આપશે.</p>
+      <div class="conclusion-period-list">${hardWorkBlocks}</div>
+    </div>`;
+
+  // ---------- Section 7: Overall Conclusion ----------
+  const doshaLines = [];
+  if (mangal && mangal.hasDosha) doshaLines.push('મંગળ દોષ');
+  if (kalsarp && kalsarp.hasKalsarp) doshaLines.push('કાળ-સર્પ દોષ');
+  if (pitru && pitru.hasPitru) doshaLines.push('પિતૃ દોષ');
+  const doshaSummary = doshaLines.length
+    ? `કુંડળીમાં ${doshaLines.join(', ')} જોવા મળે છે — ઉપરોક્ત વિભાગમાં દર્શાવેલ ઉપાય નિયમિત કરવાથી તેની અસર હળવી થાય છે.`
+    : 'કુંડળીમાં કોઈ મુખ્ય દોષ જોવા મળતો નથી, જે જીવનમાં સ્થિરતા અને સરળતા સૂચવે છે.';
+
+  const finalHtml = `
+    <div class="conclusion-section">
+      <div class="conclusion-section-title">📜 ૭. સંપૂર્ણ જીવન નિષ્કર્ષ</div>
+      <div class="conclusion-final">
+        <p>${name} ની જન્મકુંડળીના સંપૂર્ણ વિશ્લેષણ પરથી કહી શકાય કે જીવન સ્વભાવે ${RASHIS_GU[lagnaRashi]} લગ્નના ગુણો પ્રમાણે ઘડાશે — મહેનત, ધીરજ અને સાચી દિશામાં પ્રયત્નથી ધાર્યું લક્ષ્ય પ્રાપ્ત થશે. સ્વાસ્થ્ય અને અકસ્માત અંગે ઉપર દર્શાવેલ મહાદશા-અંતર્દશા સંયોજનોના સમયગાળા દરમિયાન વિશેષ ધ્યાન રાખવાથી મોટા ભાગની મુશ્કેલી ટાળી શકાય છે.</p>
+        <p>વિવાહ અને દામ્પત્ય જીવન માટે ઉપર દર્શાવેલ શુક્ર/સપ્તમેશ/દ્વિતીયેશ સંબંધિત ચોક્કસ અંતર્દશા-ગાળા સૌથી અનુકૂળ ગણાય. સંઘર્ષના સમયગાળા દરમિયાન ધીરજ ન છોડવી — તે પછીનો સમય સામાન્ય રીતે વધુ સાનુકૂળ સાબિત થાય છે.</p>
+        <p>${doshaSummary} એકંદરે, નિયમિત ધાર્મિક આચરણ, ઈષ્ટ-દેવની ઉપાસના અને વડીલોના આશીર્વાદ સાથે જીવન સુખ, સમૃદ્ધિ અને સંતોષ તરફ આગળ વધશે.</p>
+      </div>
+      <div class="conclusion-disclaimer">📌 નોંધ: ચોકસાઈ વધારવા આ નિષ્કર્ષ મહાદશા-અંતર્દશા સંયોજન, કાર્યકારી શુભ-અશુભ ગ્રહ (લગ્ન-આધારિત), ગ્રહની અવસ્થા (ઉચ્ચ/નીચ/સ્વ-રાશિ) અને પરંપરાગત દૃષ્ટિ (aspect) ના નિયમો પર આધારિત ગણતરી વડે તૈયાર થયેલ છે — છતાં આ એક સ્વયં-સંચાલિત ગણતરી-આધારિત સામાન્ય માર્ગદર્શન છે, ભવિષ્યવાણી નહીં. વ્યક્તિગત જીવનની મહત્વની ઘટનાઓ (સ્વાસ્થ્ય, વિવાહ, વ્યવસાય) અંગે અંતિમ નિર્ણય લેતાં પહેલાં અનુભવી જ્યોતિષાચાર્યની રૂબરૂ સલાહ અવશ્ય લેવી.</div>
+    </div>`;
+
+  return behaviourHtml + healthAccidentHtml + marriageHtml + toughHtml + hardWorkHtml + finalHtml;
+}
+
 // ==================== DASHA CALCULATIONS ====================
 
 function calculateVimshottariDasha(moonLon, birthDate) {
@@ -3009,6 +3444,10 @@ async function generateKundali() {
         <div class="pred-text">${p.text}</div>
       </div>
     `).join('');
+
+    // Full Life Conclusion Report
+    document.getElementById('lifeConclusionSection').innerHTML =
+      generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati);
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('results').classList.add('visible');
