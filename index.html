@@ -186,6 +186,57 @@
 
   .generate-btn:active { transform: translateY(0); }
 
+  .history-btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.7rem;
+    padding: 0.7rem 1.5rem;
+    background: rgba(212,160,23,0.08);
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 10px;
+    color: var(--gold);
+    font-family: 'Noto Sans Gujarati', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .history-btn:hover { background: rgba(212,160,23,0.16); }
+
+  .history-panel {
+    margin-top: 1rem;
+    max-height: 340px;
+    overflow-y: auto;
+    border-top: 1px solid rgba(212,160,23,0.2);
+    padding-top: 0.8rem;
+  }
+  .history-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.7rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212,160,23,0.15);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .history-item:hover { background: rgba(212,160,23,0.1); border-color: rgba(212,160,23,0.4); }
+  .history-item .hi-main { flex: 1; min-width: 0; }
+  .history-item .hi-name { color: var(--parchment); font-weight: 700; font-size: 0.92rem; }
+  .history-item .hi-meta { color: rgba(255,248,240,0.55); font-size: 0.78rem; margin-top: 2px; }
+  .history-item .hi-del {
+    flex-shrink: 0; background: none; border: none; color: rgba(255,120,120,0.7);
+    font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 6px;
+  }
+  .history-item .hi-del:hover { background: rgba(255,80,80,0.15); }
+  .history-empty { color: rgba(255,248,240,0.5); font-size: 0.85rem; text-align: center; padding: 1rem 0; }
+  .history-clear-all {
+    display: block; width: 100%; margin-top: 0.5rem; padding: 0.5rem;
+    background: none; border: 1px dashed rgba(255,120,120,0.35); border-radius: 8px;
+    color: rgba(255,140,140,0.8); font-size: 0.8rem; cursor: pointer;
+  }
+  .history-clear-all:hover { background: rgba(255,80,80,0.08); }
+
   /* Results Section */
   .results {
     max-width: 1100px;
@@ -1232,6 +1283,8 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
       </div>
     </div>
     <button class="generate-btn" onclick="generateKundali()">✨ કુંડળી બનાવો ✨</button>
+    <button class="history-btn" onclick="toggleHistoryPanel()" id="historyToggleBtn">🕒 જૂની કુંડળીઓ જુઓ</button>
+    <div class="history-panel" id="historyPanel" style="display:none;"></div>
   </div>
 </div>
 
@@ -1284,12 +1337,21 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <div class="section-header"><h2>🪐 ગ્રહ સ્થિતિ</h2></div>
   <div class="planet-grid" id="planetGrid"></div>
 
+  <!-- Divisional Charts: D9 Navamsa, D10 Dashamsha -->
+  <div class="section-header"><h2>🔷 વર્ગ કુંડળી (D9 નવમાંશ · D10 દશમાંશ)</h2></div>
+  <div class="milan-grid" style="margin-bottom:1rem;">
+    <div class="input-card tilt-3d" style="text-align:center;">
+      <div style="font-family:'Yatra One',cursive; color:var(--gold); margin-bottom:0.6rem;">D9 — નવમાંશ કુંડળી (વિવાહ-ભાગ્ય)</div>
+      <div id="navamsaChart" style="display:flex; justify-content:center;"></div>
+    </div>
+    <div class="input-card tilt-3d" style="text-align:center;">
+      <div style="font-family:'Yatra One',cursive; color:var(--gold); margin-bottom:0.6rem;">D10 — દશમાંશ કુંડળી (કારકિર્દી-કર્મ)</div>
+      <div id="dashamsaChart" style="display:flex; justify-content:center;"></div>
+    </div>
+  </div>
+
   <!-- KP Section -->
   <div id="kpSection"></div>
-
-  <!-- Doshas -->
-  <div class="section-header"><h2>⚠️ દોષ વિચાર</h2></div>
-  <div class="rashi-info-grid" id="doshaGrid"></div>
 
   <!-- Sade Sati -->
   <div class="section-header"><h2>🪐 સાડેસાતી (સંપૂર્ણ સૂચિ)</h2></div>
@@ -1332,6 +1394,26 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Predictions -->
   <div class="section-header"><h2>🔮 ભવિષ્ય કથન</h2></div>
   <div class="predictions-grid" id="predictionsGrid"></div>
+
+  <!-- Varshphal (Annual / Year Kundali) -->
+  <div class="section-header"><h2>📆 વર્ષ કુંડળી (વર્ષફલ)</h2></div>
+  <div class="input-card tilt-3d">
+    <div class="form-group">
+      <label>કઈ ઉંમરનું વર્ષ કુંડળી જોઈએ છે? (વર્ષફલ વર્ષ)</label>
+      <input type="number" id="varshphalAge" min="1" max="110" placeholder="દા.ત. 25">
+    </div>
+    <button class="history-btn" onclick="generateVarshphal()">📆 વર્ષ કુંડળી બનાવો</button>
+    <div id="varshphalResult" style="margin-top:1.2rem;"></div>
+  </div>
+
+  <!-- Lal Kitab -->
+  <div class="section-header"><h2>📕 લાલ કિતાબ ઉપાય</h2></div>
+  <div class="input-card tilt-3d">
+    <div id="lalKitabSection"></div>
+    <p style="font-size:0.78rem; color:rgba(255,248,240,0.55); margin-top:1rem; line-height:1.6;">
+      નોંધ: આ સામાન્ય, ગ્રહ-આધારિત લાલ કિતાબ ઉપાયો છે. સંપૂર્ણ લાલ કિતાબ પદ્ધતિ (કાયમી ભાવ, ઋણ-વિચાર વગેરે) અલગ ગણતરી-પદ્ધતિ વાપરે છે — ચોક્કસ ઉપાય માટે જ્યોતિષાચાર્યનો સંપર્ક કરો.
+    </p>
+  </div>
 
   <!-- Full Life Conclusion Report -->
   <div class="section-header"><h2>📜 સંપૂર્ણ જીવન નિષ્કર્ષ (Complete Life Conclusion)</h2></div>
@@ -1604,15 +1686,7 @@ function getLagnaLongitude(jd, lat, lon) {
   return asc;
 }
 
-function calculateAllPlanets(dob, tob, lat, lon) {
-  const [y, m, d] = dob.split('-').map(Number);
-  const [h, mi]   = tob.split(':').map(Number);
-  // Convert IST (UTC+5:30) to UTC; handle midnight rollover
-  let utcH = h + mi/60 - 5.5;
-  let dy = d;
-  if (utcH < 0)  { utcH += 24; dy -= 1; }
-  if (utcH >= 24){ utcH -= 24; dy += 1; }
-  const jd   = toJulianDay(y, m, dy, utcH, 0, 0);
+function calculateAllPlanetsFromJD(jd, lat, lon) {
   const ayan = getAyanamsa(jd);
 
   const positions = {};
@@ -1632,6 +1706,18 @@ function calculateAllPlanets(dob, tob, lat, lon) {
   positions['Ketu'] = N(positions['Rahu'] + 180);
 
   return { positions, jd, ayan };
+}
+
+function calculateAllPlanets(dob, tob, lat, lon) {
+  const [y, m, d] = dob.split('-').map(Number);
+  const [h, mi]   = tob.split(':').map(Number);
+  // Convert IST (UTC+5:30) to UTC; handle midnight rollover
+  let utcH = h + mi/60 - 5.5;
+  let dy = d;
+  if (utcH < 0)  { utcH += 24; dy -= 1; }
+  if (utcH >= 24){ utcH -= 24; dy += 1; }
+  const jd = toJulianDay(y, m, dy, utcH, 0, 0);
+  return calculateAllPlanetsFromJD(jd, lat, lon);
 }
 
 function getRashi(lon) { return Math.floor(lon / 30); }
@@ -3071,6 +3157,94 @@ function renderKPSection(positions) {
 
 // ==================== MAIN RENDER ====================
 
+// ==================== KUNDALI HISTORY (browser-local) ====================
+const HISTORY_KEY = 'nigmayuKundaliHistory';
+const HISTORY_MAX = 30;
+
+function getHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveToHistory(entry) {
+  try {
+    let list = getHistory();
+    // avoid back-to-back duplicate of the exact same entry
+    list = list.filter(h => !(h.name===entry.name && h.dob===entry.dob && h.tob===entry.tob && h.pob===entry.pob));
+    list.unshift({ ...entry, ts: Date.now() });
+    if (list.length > HISTORY_MAX) list = list.slice(0, HISTORY_MAX);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    if (document.getElementById('historyPanel').style.display !== 'none') renderHistoryPanel();
+  } catch(e) { /* localStorage unavailable — silently skip */ }
+}
+
+function formatHistoryDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('gu-IN', { day:'2-digit', month:'short', year:'numeric' }) + ' ' +
+         d.toLocaleTimeString('gu-IN', { hour:'2-digit', minute:'2-digit' });
+}
+
+function renderHistoryPanel() {
+  const panel = document.getElementById('historyPanel');
+  const list = getHistory();
+  if (list.length === 0) {
+    panel.innerHTML = '<div class="history-empty">હજુ કોઈ કુંડળી સાચવેલી નથી — તમે ✨ કુંડળી બનાવો ✨ દબાવો ત્યારે અહીં ઇતિહાસ દેખાશે.</div>';
+    return;
+  }
+  panel.innerHTML = list.map((h, i) => `
+    <div class="history-item" onclick="loadHistoryEntry(${i})">
+      <div class="hi-main">
+        <div class="hi-name">👤 ${h.name || 'જાતક'}</div>
+        <div class="hi-meta">${h.dob} · ${h.tob} · ${h.pob || '—'}</div>
+      </div>
+      <button class="hi-del" onclick="event.stopPropagation(); deleteHistoryEntry(${i})" title="ડિલીટ કરો">🗑️</button>
+    </div>
+  `).join('') + `<button class="history-clear-all" onclick="clearAllHistory()">બધો ઇતિહાસ ડિલીટ કરો</button>`;
+}
+
+function toggleHistoryPanel() {
+  const panel = document.getElementById('historyPanel');
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) {
+    panel.style.display = 'none';
+    document.getElementById('historyToggleBtn').textContent = '🕒 જૂની કુંડળીઓ જુઓ';
+  } else {
+    renderHistoryPanel();
+    panel.style.display = 'block';
+    document.getElementById('historyToggleBtn').textContent = '🕒 ઇતિહાસ છુપાવો';
+  }
+}
+
+function loadHistoryEntry(i) {
+  const list = getHistory();
+  const h = list[i];
+  if (!h) return;
+  document.getElementById('name').value = h.name || '';
+  document.getElementById('dob').value = h.dob || '';
+  document.getElementById('tob').value = h.tob || '';
+  document.getElementById('pob').value = h.pob || '';
+  document.getElementById('lat').value = h.lat || '';
+  document.getElementById('lon').value = h.lon || '';
+  document.getElementById('historyPanel').style.display = 'none';
+  document.getElementById('historyToggleBtn').textContent = '🕒 જૂની કુંડળીઓ જુઓ';
+  generateKundali();
+}
+
+function deleteHistoryEntry(i) {
+  let list = getHistory();
+  list.splice(i, 1);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  renderHistoryPanel();
+}
+
+function clearAllHistory() {
+  if (!confirm('શું તમે ખરેખર બધો ઇતિહાસ ડિલીટ કરવા માંગો છો?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistoryPanel();
+}
+
 async function generateKundali() {
   const dob = document.getElementById('dob').value;
   const tob = document.getElementById('tob').value;
@@ -3087,6 +3261,8 @@ async function generateKundali() {
   // Default to Ahmedabad if no coordinates
   const lat = parseFloat(latInput) || 23.0225;
   const lon = parseFloat(lonInput) || 72.5714;
+
+  saveToHistory({ name, dob, tob, pob, lat, lon });
 
   document.getElementById('loading').style.display = 'block';
   document.getElementById('results').classList.remove('visible');
@@ -3199,85 +3375,22 @@ async function generateKundali() {
     // KP Section
     document.getElementById('kpSection').innerHTML = renderKPSection(positions);
 
-    // Doshas
+    // Divisional Charts: D9 Navamsa, D10 Dashamsha
+    document.getElementById('navamsaChart').innerHTML = buildDivisionalChart(positions, navamsaRashi, 260);
+    document.getElementById('dashamsaChart').innerHTML = buildDivisionalChart(positions, dashamsaRashi, 260);
+
+    // Lal Kitab (basic, planet-based remedies)
+    document.getElementById('lalKitabSection').innerHTML = renderLalKitab(positions, lagnaRashi);
+
+    // Store this chart's birth data for the Varshphal (year kundali) section below
+    window.__currentBirthState = { jd, lat, lon, name, natalSunSid: positions['Sun'] };
+    document.getElementById('varshphalResult').innerHTML = '';
+
+    // Doshas (kept for use in Life Conclusion below; the standalone Dosha Vichar
+    // display grid was removed per request)
     const mangal   = checkMangalDosha(positions);
     const kalsarp  = checkKaalsarpDosha(positions);
     const pitru    = checkPitruDosha(positions);
-    const grahan   = checkGrahan(positions);
-    const guruChan = checkGuruChandal(positions);
-
-    function doshaCard(icon, title, hasDosha, mainLine, details, remedy='') {
-      const col = hasDosha ? '#FF6666' : '#66EE99';
-      const bg  = hasDosha ? 'rgba(180,40,40,0.12)' : 'rgba(30,100,30,0.08)';
-      const border = hasDosha ? 'rgba(220,60,60,0.4)' : 'rgba(60,160,60,0.3)';
-      return `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:1rem 1.2rem;transition:all 0.3s">
-        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem">
-          <span style="font-size:1.4rem">${icon}</span>
-          <span style="font-weight:700;color:var(--gold);font-size:0.95rem">${title}</span>
-          <span style="margin-left:auto;font-size:0.85rem;font-weight:700;color:${col}">${hasDosha ? '✗ છે' : '✓ નથી'}</span>
-        </div>
-        <div style="font-weight:600;color:${col};font-size:0.9rem;margin-bottom:0.5rem">${mainLine}</div>
-        <div style="font-size:0.8rem;color:rgba(255,248,240,0.65);line-height:1.7">${details}</div>
-        ${remedy ? `<div style="margin-top:0.6rem;padding:0.4rem 0.7rem;background:rgba(255,200,50,0.08);border-left:2px solid rgba(255,200,50,0.4);border-radius:0 6px 6px 0;font-size:0.78rem;color:rgba(255,220,120,0.8)">🪷 ઉપાય: ${remedy}</div>` : ''}
-      </div>`;
-    }
-
-    const doshaGrid = document.getElementById('doshaGrid');
-    doshaGrid.style.display = 'grid';
-    doshaGrid.style.gridTemplateColumns = 'repeat(auto-fit,minmax(280px,1fr))';
-    doshaGrid.style.gap = '1rem';
-    doshaGrid.style.marginTop = '0.5rem';
-    doshaGrid.innerHTML =
-      doshaCard('⚔️','મંગળ દોષ', mangal.hasDosha,
-        mangal.hasDosha
-          ? `${mangal.intensity} મંગળ દોષ — ${mangal.marsHouse}મો ભાવ${mangal.cancelled?' (ઘટ)':''}`
-          : 'મંગળ દોષ નથી',
-        `<b>નિયમ:</b> મંગળ ૧, ૪, ૭, ૮, ૧૦, ૧૨ ભાવમાં હોય તો મંગળ દોષ<br>
-         લગ્નથી: <b>${mangal.marsHouse}મો ભાવ</b> ${[1,4,7,8,10,12].includes(mangal.marsHouse)?'<span style="color:#FF9999">⚠ દોષ-ઘર</span>':'<span style="color:#99FF99">✓ દોષ-ઘર નહીં</span>'}<br>
-         ચંદ્રથી: <b>${mangal.marsFromMoon}મો ભાવ</b> ${[1,4,7,8,10,12].includes(mangal.marsFromMoon)?'<span style="color:#FF9999">⚠ દોષ-ઘર</span>':'<span style="color:#99FF99">✓ ઠીક</span>'}<br>
-         ${mangal.cancelled ? '<span style="color:#99FF99">✅ '+mangal.cancels.join(' | ')+'</span>' : mangal.hasDosha ? '<span style="color:#FF9999">⚠ દોષ-ઘટ નહીં</span>' : ''}`,
-        mangal.hasDosha ? 'મંગળ-શાંતિ પૂજા, મંગળ-વ્રત, ૪૩ દિ. ઉપવાસ' : ''
-      ) +
-      doshaCard('🐍','કાળ-સર્પ દોષ', kalsarp.hasKalsarp,
-        kalsarp.hasKalsarp
-          ? `${kalsarp.ksName} કાળ-સર્પ — રાહુ ${kalsarp.rahuHouse}મા ભાવ`
-          : kalsarp.hasKalAmrit
-            ? `${kalsarp.ksName} કાળ-અમૃત — ફળ-પ્રદ`
-            : 'કાળ-સર્પ દોષ નથી',
-        `<b>નિયમ:</b> રાહુ કોઈ પણ ભાવમાં + રાહુથી ૭મા ભાવ = કેતુ + સર્વ ૭ ગ્રહ રાહુ-કેતુ વચ્ચે<br>
-         રાહુ: <b>${kalsarp.rahuRashiGu}</b> (${kalsarp.rahuHouse}મો ભ.) · કેતુ: <b>${kalsarp.ketuRashiGu}</b> (${kalsarp.ketuHouse}મો ભ. — ૭મો)<br>
-         ${kalsarp.hasKalsarp
-           ? `<span style="color:#FF9999">⚠ સર્વ ૭ ગ્રહ રાહુ→કેતુ ચાપ વચ્ચે — <b>${kalsarp.ksName}</b> દોષ</span>`
-           : kalsarp.hasKalAmrit
-             ? `<span style="color:#AAFFAA">✅ સર્વ ૭ ગ્રહ કેતુ→રાહુ ચાપ વચ્ચે — કાળ-અમૃત</span>`
-             : `<span style="color:#AAFFAA">✅ ${kalsarp.outsideArc.join(', ')||'ગ્રહ'} ચાપ બહાર — દોષ નહીં</span>`}`,
-        kalsarp.hasKalsarp ? 'નાગ-પૂજા, ત્ર્યંબકેશ્વર ભ.ન., રાહુ-કેતુ શાંતિ' : ''
-      ) +
-      doshaCard('🌘','પિતૃ દોષ', pitru.hasPitru,
-        pitru.hasPitru
-          ? `${pitru.severity} પિતૃ દોષ (${pitru.reasons.length} સૂચક)`
-          : 'પિતૃ દોષ નથી',
-        pitru.hasPitru
-          ? pitru.reasons.map(r=>`• ${r}`).join('<br>')
-          : `સૂર્ય ${pitru.sunHouse}મા ભાવ — પૂર્વજ-ઋણ ઓછું`,
-        pitru.hasPitru ? 'પિંડ-દાન, નારાયણ-બળ, ગયા-ક્ષેત્ર ત.' : ''
-      ) +
-      doshaCard('🌑','ગ્રહણ દોષ', grahan.hasGrahan,
-        grahan.hasGrahan
-          ? `${grahan.chandraGrahan?'ચંદ્ર-ગ્રહણ ':''}${grahan.suryaGrahan?'સૂર્ય-ગ્રહણ ':''}દોષ`
-          : 'ગ્રહણ દોષ નથી',
-        `${grahan.chandraGrahan ? `ચંદ્ર + ${grahan.moonWith} સ-ભાવ<br>` : ''}${grahan.suryaGrahan ? `સૂર્ય + ${grahan.sunWith} સ-ભાવ<br>` : ''}${!grahan.hasGrahan ? 'ચંદ્ર અને સૂર્ય રાહુ-કેતુ-મુક્ત' : ''}`,
-        grahan.hasGrahan ? 'ચંદ્ર-ગ્રહ ઉ., ચ.ય.ઉ., ૧૧ ઉ.ળ. ક.' : ''
-      ) +
-      doshaCard('🔱','ગુરુ-ચાંડાળ દોષ', guruChan.hasGC,
-        guruChan.hasGC
-          ? `ગુરુ + ${guruChan.conjWith} — ચ. દ.`
-          : 'ગુ.-ચા. દ. નથી',
-        guruChan.hasGC
-          ? `ગુ. + ${guruChan.conjWith} સ-ભાવ — જ્ઞ. ઘ., ગ. ય. ન.`
-          : 'ગુ. સ્વ-ભ.',
-        guruChan.hasGC ? 'ગ.ય. ઉ., ગ. ન., ૧ ગ. ત. ઉ.' : ''
-      );
 
     // Sade Sati — full timeline
     const sadeSati = calculateSadeSati(positions['Moon'], dob);
@@ -3642,6 +3755,153 @@ function buildMiniNorthChart(positions, size){
   const uid = 'ng' + (++__chartIdCounter);
   svg = svg.replace(/id="ng"/g, 'id="'+uid+'"').replace(/url\(#ng\)/g, 'url(#'+uid+')');
   return svg;
+}
+
+// ==================== DIVISIONAL CHARTS (D9 Navamsa, D10 Dashamsha) ====================
+
+function navamsaRashi(lon){
+  const rashi = getRashi(lon), d = lon % 30;
+  const part = Math.floor(d / (30/9)); // 0-8
+  let start;
+  if (rashi % 3 === 0) start = rashi;              // Movable (Chara): Aries, Cancer, Libra, Capricorn
+  else if (rashi % 3 === 1) start = (rashi + 8) % 12; // Fixed (Sthira): starts 9th from itself
+  else start = (rashi + 4) % 12;                    // Dual (Dwiswabhava): starts 5th from itself
+  return (start + part) % 12;
+}
+
+function dashamsaRashi(lon){
+  const rashi = getRashi(lon), d = lon % 30;
+  const part = Math.floor(d / 3); // 0-9
+  const start = (rashi % 2 === 0) ? rashi : (rashi + 8) % 12; // odd sign: same; even sign: 9th from it
+  return (start + part) % 12;
+}
+
+function buildDivisionalChart(positions, divFn, size){
+  const lagnaDivRashi = divFn(positions['Lagna']);
+  const houseContents = Array.from({length:12}, () => []);
+  const pKeys = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+  const pShort = {Sun:'સૂ',Moon:'ચં',Mars:'મં',Mercury:'બુ',Jupiter:'ગુ',Venus:'શુ',Saturn:'શ',Rahu:'રા',Ketu:'કે'};
+  pKeys.forEach(p => {
+    houseContents[(divFn(positions[p]) - lagnaDivRashi + 12) % 12].push(pShort[p]);
+  });
+  let svg = buildNorthIndianSVG(size || 260, 10, houseContents, lagnaDivRashi);
+  const uid = 'ng' + (++__chartIdCounter);
+  svg = svg.replace(/id="ng"/g, 'id="'+uid+'"').replace(/url\(#ng\)/g, 'url(#'+uid+')');
+  return svg;
+}
+
+// ==================== VARSHPHAL (ANNUAL / SOLAR-RETURN CHART) ====================
+
+// Finds the exact JD when the Sun returns to its natal sidereal longitude for
+// the given age (birthday solar return, à la Tajik Varshphal).
+function findSolarReturnJD(birthJD, natalSunSid, ageYears, lat, lon){
+  // Rough guess using the mean tropical year, then refine by bisection.
+  const guessJD = birthJD + ageYears * 365.2425;
+  const sunSidAt = (jd) => {
+    const ayan = getAyanamsa(jd);
+    return toSidereal(getSunLongitude(jd), ayan);
+  };
+  // Search window: ±4 days around the guess (Sun moves ~1°/day, so this safely brackets the return)
+  let lo = guessJD - 4, hi = guessJD + 4;
+  // Build a monotonically increasing (unwrapped) function for bisection near the target
+  const target = natalSunSid;
+  const valAt = (jd) => {
+    let v = sunSidAt(jd) - target;
+    while (v > 180) v -= 360;
+    while (v < -180) v += 360;
+    return v; // negative before return, positive after, crosses 0 at the return moment
+  };
+  let loV = valAt(lo), hiV = valAt(hi);
+  // Ensure a sign change is bracketed; nudge window out a little if not (rare edge case)
+  let tries = 0;
+  while (loV > 0 && tries < 5) { lo -= 2; loV = valAt(lo); tries++; }
+  tries = 0;
+  while (hiV < 0 && tries < 5) { hi += 2; hiV = valAt(hi); tries++; }
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    const midV = valAt(mid);
+    if (midV < 0) lo = mid; else hi = mid;
+  }
+  return hi;
+}
+
+function calculateVarshphal(birthJD, natalSunSid, ageYears, lat, lon){
+  const returnJD = findSolarReturnJD(birthJD, natalSunSid, ageYears, lat, lon);
+  const { positions } = calculateAllPlanetsFromJD(returnJD, lat, lon);
+  const returnDate = jdToDate(returnJD);
+  // Convert back to IST for display
+  const istMs = returnDate.getTime() + 5.5*3600*1000;
+  const istDate = new Date(istMs);
+  return { positions, returnJD, istDate };
+}
+
+function generateVarshphal(){
+  const state = window.__currentBirthState;
+  const resultEl = document.getElementById('varshphalResult');
+  if (!state) {
+    alert('પહેલા ✨ કુંડળી બનાવો ✨ દબાવીને જન્મ કુંડળી બનાવો, પછી વર્ષ કુંડળી જોઈ શકાશે.');
+    return;
+  }
+  const age = parseInt(document.getElementById('varshphalAge').value, 10);
+  if (!age || age < 1 || age > 110) {
+    alert('કૃપા કરી માન્ય ઉંમર (1-110) દાખલ કરો');
+    return;
+  }
+  resultEl.innerHTML = '<div style="text-align:center; color:var(--gold); padding:1rem;">ગણતરી ચાલી રહી છે...</div>';
+  setTimeout(() => {
+    const { positions, istDate } = calculateVarshphal(state.jd, state.natalSunSid, age, state.lat, state.lon);
+    const lagnaRashi = getRashi(positions['Lagna']);
+    const dateStr = istDate.toLocaleDateString('gu-IN', { day:'2-digit', month:'long', year:'numeric' });
+    const timeStr = istDate.toLocaleTimeString('gu-IN', { hour:'2-digit', minute:'2-digit' });
+    const chartSVG = buildMiniNorthChart(positions, 260);
+    const pKeys = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+    const pNames = ['સૂર્ય','ચંદ્ર','મંગળ','બુધ','ગુરુ','શુક્ર','શનિ','રાહુ','કેતુ'];
+    const rows = pKeys.map((p,i) => {
+      const rashi = getRashi(positions[p]);
+      const house = (rashi - lagnaRashi + 12) % 12 + 1;
+      return `<div style="display:flex; justify-content:space-between; padding:0.45rem 0.2rem; border-bottom:1px dashed rgba(212,160,23,0.15); font-size:0.9rem;">
+        <span style="color:rgba(255,248,240,0.65);">${pNames[i]}</span>
+        <span style="color:var(--parchment); font-weight:600;">${RASHIS_GU[rashi]} — ${house}મો ભાવ</span>
+      </div>`;
+    }).join('');
+    resultEl.innerHTML = `
+      <div style="text-align:center; color:var(--gold); font-family:'Yatra One',cursive; margin-bottom:0.8rem;">
+        ${age} વર્ષની ઉંમરનું વર્ષ કુંડળી (સૌર-વર્ષ-પ્રવેશ: ${dateStr}, ${timeStr} IST)
+      </div>
+      <div style="display:flex; justify-content:center; margin-bottom:1rem;">${chartSVG}</div>
+      <div>${rows}</div>
+      <p style="font-size:0.78rem; color:rgba(255,248,240,0.55); margin-top:1rem; line-height:1.6;">
+        નોંધ: આ વર્ષફલ (Tajik/solar-return) પદ્ધતિ પર આધારિત છે — તે ક્ષણ કે જ્યારે સૂર્ય જન્મ-કુંડળીના સૂર્યની બરાબર જ સ્થિતિ પર પાછો ફરે છે, જન્મ-સ્થળ પ્રમાણે ગણેલ છે.
+      </p>`;
+  }, 300);
+}
+
+// ==================== LAL KITAB (basic, planet-based remedies) ====================
+
+const LALKITAB_INFO = {
+  Sun:     { icon:'☀️', remedy:'રવિવારે તાંબાના વાસણમાં પાણી અને લાલ ફૂલ સાથે સૂર્યને અર્ઘ્ય આપો. પિતા અને વડીલોનું સન્માન કરો.' },
+  Moon:    { icon:'🌙', remedy:'સોમવારે ચોખા અને દૂધનું દાન કરો. માતાનું સન્માન કરો, ચાંદીની વસ્તુ ધારણ કરો.' },
+  Mars:    { icon:'♂️', remedy:'મંગળવારે ગોળ અને લાલ મસૂરનું દાન કરો. હનુમાન ચાલીસાનો પાઠ કરો.' },
+  Mercury: { icon:'☿️', remedy:'બુધવારે લીલા મગનું દાન કરો. વિદ્યાર્થીઓ અને બહેનની મદદ કરો.' },
+  Jupiter: { icon:'♃',  remedy:'ગુરુવારે હળદર અને ચણાની દાળનું દાન કરો. ગુરુ-શિક્ષકનું સન્માન કરો.' },
+  Venus:   { icon:'♀️', remedy:'શુક્રવારે સફેદ વસ્તુ (ખાંડ, ચોખા, દહીં) દાન કરો. સ્ત્રીઓનું સન્માન કરો.' },
+  Saturn:  { icon:'♄',  remedy:'શનિવારે કાળા તલ અને તેલનું દાન કરો, ગરીબોને ભોજન કરાવો.' },
+  Rahu:    { icon:'☊',  remedy:'શનિવારે નાળિયેર વહેતા પાણીમાં વહાવો. કાળા કૂતરાને ભોજન આપો.' },
+  Ketu:    { icon:'☋',  remedy:'મંગળવારે કે ગુરુવારે કંબલ અને તલનું દાન કરો. કૂતરાની સેવા કરો.' }
+};
+
+function renderLalKitab(positions, lagnaRashi){
+  const pKeys = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+  const idx = ['સૂર્ય','ચંદ્ર','મંગળ','બુધ','ગુરુ','શુક્ર','શનિ','રાહુ','કેતુ'];
+  return '<div class="predictions-grid">' + pKeys.map((p,i) => {
+    const rashi = getRashi(positions[p]);
+    const house = (rashi - lagnaRashi + 12) % 12 + 1;
+    const info = LALKITAB_INFO[p];
+    return `<div class="prediction-card">
+      <div class="pred-house">${info.icon} ${idx[i]} — ${house}મા ભાવમાં</div>
+      <div class="pred-text">🪷 ઉપાય: ${info.remedy}</div>
+    </div>`;
+  }).join('') + '</div>';
 }
 
 function tithiSafeMod(n, m){ return ((n % m) + m) % m; }
