@@ -893,6 +893,18 @@
   .milan-card.boy { border-color: rgba(60,140,220,0.35); }
   .milan-card.girl { border-color: rgba(220,90,150,0.35); }
 
+  .milan-notice {
+    background: rgba(220,160,40,0.10);
+    border: 1px solid rgba(220,160,40,0.4);
+    border-radius: 12px;
+    padding: 0.9rem 1.2rem;
+    margin: 0 0 1.2rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--parchment);
+    text-align: center;
+  }
+
   .milan-btn {
     display: block; width: 100%; margin-top: 1.5rem; padding: 1rem;
     font-family: 'Yatra One', cursive; font-size: 1.2rem;
@@ -1281,6 +1293,13 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
         <label>👤 નામ (Name)</label>
         <input type="text" id="name" placeholder="તમારું નામ">
       </div>
+      <div class="form-group">
+        <label>⚧ જાતિ (Gender)</label>
+        <select id="gender">
+          <option value="male">પુરુષ (Male)</option>
+          <option value="female">સ્ત્રી (Female)</option>
+        </select>
+      </div>
     </div>
     <button class="generate-btn" onclick="generateKundali()">✨ કુંડળી બનાવો ✨</button>
     <button class="history-btn" onclick="toggleHistoryPanel()" id="historyToggleBtn">🕒 જૂની કુંડળીઓ જુઓ</button>
@@ -1428,6 +1447,11 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
 </div><!-- /tabKundali -->
 
 <div id="tabMilan" class="tab-panel">
+  <div class="milan-notice">
+    ⚠️ <b>સૂચના:</b> આ કુંડળી મિલન ગણતરી પરંપરાગત અષ્ટકૂટ પદ્ધતિ પર આધારિત એક સામાન્ય માર્ગદર્શન છે.
+    લગ્ન અંગે કોઈ પણ અંતિમ નિર્ણય લેતા પહેલા કૃપા કરી અનુભવી જ્યોતિષાચાર્યની સલાહ અવશ્ય લો.
+  </div>
+
   <div class="milan-grid">
     <div class="input-card milan-card boy tilt-3d">
       <div class="milan-card-title">🤵 વર (છોકરો)</div>
@@ -1478,6 +1502,9 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
         </div>
         <div id="milanVerdict"></div>
         <div id="milanDoshaFlags"></div>
+      </div>
+      <div class="milan-notice" style="margin-top:1rem;">
+        ⚠️ આ ગુણ મિલન માત્ર માર્ગદર્શન માટે છે. અંતિમ નિર્ણય લેતા પહેલા કૃપા કરી અનુભવી જ્યોતિષાચાર્યની સલાહ અવશ્ય લો.
       </div>
     </div>
 
@@ -2797,7 +2824,7 @@ function lc_buildHealthAccident(vimDashas, positions, houses, lagnaRashi) {
 }
 
 // ---- Marriage: Mahadasha + Antardasha combination analysis ----
-function lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2) {
+function lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2, karakaPlanet, karakaLabel) {
   let blocks = '';
   vimDashas.forEach(d => {
     const mdP = d.planet;
@@ -2805,12 +2832,12 @@ function lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2
     let flagged = [];
     ants.forEach(a => {
       const adP = a.planet;
-      const isSig = p => p === 'Venus' || p === lord7 || p === lord2;
+      const isSig = p => p === karakaPlanet || p === lord7 || p === lord2;
       if (isSig(mdP) || isSig(adP)) {
         const range = formatDate(a.start) + ' – ' + formatDate(a.end);
         const head = planetGu(mdP) + ' મહાદશા / ' + planetGu(adP) + ' અંતર્દશા — ' + range;
         const trigger = isSig(mdP) ? mdP : adP;
-        let role = trigger === 'Venus' ? 'શુક્ર (કારક ગ્રહ)' : trigger === lord7 ? 'સપ્તમેશ' : 'દ્વિતીયેશ';
+        let role = trigger === karakaPlanet ? karakaLabel + ' (કારક ગ્રહ)' : trigger === lord7 ? 'સપ્તમેશ' : 'દ્વિતીયેશ';
         let txt = role + ' ની સંડોવણી હોવાથી આ ચોક્કસ ગાળો વિવાહ, સગાઈ કે દામ્પત્ય જીવનના મહત્વના નિર્ણય માટે અનુકૂળ ગણાય.';
         const dn = dignityNote(trigger, positions[trigger]);
         if (dn) txt += ' (' + dn + '.)';
@@ -2820,7 +2847,7 @@ function lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2
     const mdRange = formatDate(d.start) + ' – ' + formatDate(d.end);
     const mdHead = planetGu(mdP) + ' મહાદશા (સંપૂર્ણ) — ' + mdRange;
     blocks += flagged.length ? flagged.join('') :
-      lc_periodBlock('', mdHead, 'આ મહાદશામાં શુક્ર, સપ્તમેશ કે દ્વિતીયેશનું સીધું અંતર્દશા-સંયોજન નથી; દામ્પત્ય જીવન સ્થિર રહેશે, મોટો ફેરફાર અસંભવ.');
+      lc_periodBlock('', mdHead, 'આ મહાદશામાં ' + karakaLabel + ', સપ્તમેશ કે દ્વિતીયેશનું સીધું અંતર્દશા-સંયોજન નથી; દામ્પત્ય જીવન સ્થિર રહેશે, મોટો ફેરફાર અસંભવ.');
   });
   return blocks;
 }
@@ -2854,7 +2881,7 @@ function lc_hardWorkText(p, lord6, lord10, positions) {
   return txt;
 }
 
-function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati) {
+function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati, gender) {
   const GRAHAS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
   const houses = {};
   GRAHAS.forEach(p => { houses[p] = houseOfPlanet(positions[p], lagnaRashi); });
@@ -2865,6 +2892,10 @@ function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, 
   const lord8  = houseLordPlanet(8, lagnaRashi);
   const lord10 = houseLordPlanet(10, lagnaRashi);
   const lord12 = houseLordPlanet(12, lagnaRashi);
+
+  // Marriage karaka (significator): Venus for a male chart, Jupiter for a female chart
+  const karakaPlanet = (gender === 'female') ? 'Jupiter' : 'Venus';
+  const karakaLabel   = (gender === 'female') ? 'ગુરુ' : 'શુક્ર';
 
   const moonRashi = getRashi(positions['Moon']);
   const sunRashi  = getRashi(positions['Sun']);
@@ -2893,11 +2924,11 @@ function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, 
     </div>`;
 
   // ---------- Section 4: Marriage across full life ----------
-  const marriageBlocks = lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2);
+  const marriageBlocks = lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2, karakaPlanet, karakaLabel);
   const marriageHtml = `
     <div class="conclusion-section">
       <div class="conclusion-section-title">💍 ૪. વિવાહ અને દામ્પત્ય જીવન — સંપૂર્ણ આયુષ્યકાળ</div>
-      <p>સપ્તમ ભાવ ${RASHIS_GU[(lagnaRashi+6)%12]} રાશિમાં આવે છે, જેનો સ્વામી ${planetGu(lord7)} છે; શુક્ર (કારક ગ્રહ) ${houses['Venus']}મા ભાવમાં સ્થિત છે. નીચે સંપૂર્ણ જીવનના મહાદશા-ક્રમમાં, જ્યાં પણ શુક્ર, સપ્તમેશ કે દ્વિતીયેશ મહાદશા અથવા અંતર્દશા સ્વામી તરીકે આવે છે તે ચોક્કસ ગાળા વિવાહ-સંબંધિત મહત્વના સમય તરીકે લીલા ચિહ્ન સાથે દર્શાવેલ છે.</p>
+      <p>સપ્તમ ભાવ ${RASHIS_GU[(lagnaRashi+6)%12]} રાશિમાં આવે છે, જેનો સ્વામી ${planetGu(lord7)} છે; ${karakaLabel} (કારક ગ્રહ) ${houses[karakaPlanet]}મા ભાવમાં સ્થિત છે. નીચે સંપૂર્ણ જીવનના મહાદશા-ક્રમમાં, જ્યાં પણ ${karakaLabel}, સપ્તમેશ કે દ્વિતીયેશ મહાદશા અથવા અંતર્દશા સ્વામી તરીકે આવે છે તે ચોક્કસ ગાળા વિવાહ-સંબંધિત મહત્વના સમય તરીકે લીલા ચિહ્ન સાથે દર્શાવેલ છે.</p>
       <div class="conclusion-period-list">${marriageBlocks}</div>
     </div>`;
 
@@ -2948,7 +2979,7 @@ function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, 
       <div class="conclusion-section-title">📜 ૭. સંપૂર્ણ જીવન નિષ્કર્ષ</div>
       <div class="conclusion-final">
         <p>${name} ની જન્મકુંડળીના સંપૂર્ણ વિશ્લેષણ પરથી કહી શકાય કે જીવન સ્વભાવે ${RASHIS_GU[lagnaRashi]} લગ્નના ગુણો પ્રમાણે ઘડાશે — મહેનત, ધીરજ અને સાચી દિશામાં પ્રયત્નથી ધાર્યું લક્ષ્ય પ્રાપ્ત થશે. સ્વાસ્થ્ય અને અકસ્માત અંગે ઉપર દર્શાવેલ મહાદશા-અંતર્દશા સંયોજનોના સમયગાળા દરમિયાન વિશેષ ધ્યાન રાખવાથી મોટા ભાગની મુશ્કેલી ટાળી શકાય છે.</p>
-        <p>વિવાહ અને દામ્પત્ય જીવન માટે ઉપર દર્શાવેલ શુક્ર/સપ્તમેશ/દ્વિતીયેશ સંબંધિત ચોક્કસ અંતર્દશા-ગાળા સૌથી અનુકૂળ ગણાય. સંઘર્ષના સમયગાળા દરમિયાન ધીરજ ન છોડવી — તે પછીનો સમય સામાન્ય રીતે વધુ સાનુકૂળ સાબિત થાય છે.</p>
+        <p>વિવાહ અને દામ્પત્ય જીવન માટે ઉપર દર્શાવેલ ${karakaLabel}/સપ્તમેશ/દ્વિતીયેશ સંબંધિત ચોક્કસ અંતર્દશા-ગાળા સૌથી અનુકૂળ ગણાય. સંઘર્ષના સમયગાળા દરમિયાન ધીરજ ન છોડવી — તે પછીનો સમય સામાન્ય રીતે વધુ સાનુકૂળ સાબિત થાય છે.</p>
         <p>${doshaSummary} એકંદરે, નિયમિત ધાર્મિક આચરણ, ઈષ્ટ-દેવની ઉપાસના અને વડીલોના આશીર્વાદ સાથે જીવન સુખ, સમૃદ્ધિ અને સંતોષ તરફ આગળ વધશે.</p>
       </div>
       <div class="conclusion-disclaimer">📌 નોંધ: ચોકસાઈ વધારવા આ નિષ્કર્ષ મહાદશા-અંતર્દશા સંયોજન, કાર્યકારી શુભ-અશુભ ગ્રહ (લગ્ન-આધારિત), ગ્રહની અવસ્થા (ઉચ્ચ/નીચ/સ્વ-રાશિ) અને પરંપરાગત દૃષ્ટિ (aspect) ના નિયમો પર આધારિત ગણતરી વડે તૈયાર થયેલ છે — છતાં આ એક સ્વયં-સંચાલિત ગણતરી-આધારિત સામાન્ય માર્ગદર્શન છે, ભવિષ્યવાણી નહીં. વ્યક્તિગત જીવનની મહત્વની ઘટનાઓ (સ્વાસ્થ્ય, વિવાહ, વ્યવસાય) અંગે અંતિમ નિર્ણય લેતાં પહેલાં અનુભવી જ્યોતિષાચાર્યની રૂબરૂ સલાહ અવશ્ય લેવી.</div>
@@ -3227,6 +3258,7 @@ function loadHistoryEntry(i) {
   document.getElementById('pob').value = h.pob || '';
   document.getElementById('lat').value = h.lat || '';
   document.getElementById('lon').value = h.lon || '';
+  document.getElementById('gender').value = h.gender || 'male';
   document.getElementById('historyPanel').style.display = 'none';
   document.getElementById('historyToggleBtn').textContent = '🕒 જૂની કુંડળીઓ જુઓ';
   generateKundali();
@@ -3252,6 +3284,7 @@ async function generateKundali() {
   const latInput = document.getElementById('lat').value;
   const lonInput = document.getElementById('lon').value;
   const name = document.getElementById('name').value || 'જાતક';
+  const gender = document.getElementById('gender').value || 'male';
 
   if (!dob || !tob) {
     alert('કૃપા કરી જન્મ તારીખ અને સમય દાખલ કરો');
@@ -3262,7 +3295,7 @@ async function generateKundali() {
   const lat = parseFloat(latInput) || 23.0225;
   const lon = parseFloat(lonInput) || 72.5714;
 
-  saveToHistory({ name, dob, tob, pob, lat, lon });
+  saveToHistory({ name, dob, tob, pob, lat, lon, gender });
 
   document.getElementById('loading').style.display = 'block';
   document.getElementById('results').classList.remove('visible');
@@ -3560,7 +3593,7 @@ async function generateKundali() {
 
     // Full Life Conclusion Report
     document.getElementById('lifeConclusionSection').innerHTML =
-      generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati);
+      generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati, gender);
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('results').classList.add('visible');
