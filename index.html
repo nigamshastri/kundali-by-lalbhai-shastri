@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nigmayu Jyotish — નિગમાયુ જ્યોતિષ</title>
+<title>નિગમાયુ જ્યોતિષ — ગુજરાતી કુંડળી ઓનલાઇન | Nigmayu Jyotish</title>
+<meta name="description" content="નિગમાયુ જ્યોતિષ — સંજયકુમાર શાસ્ત્રી દ્વારા મફત ગુજરાતી જન્મ કુંડળી, પંચાંગ, કુંડળી મિલન, દશા વિશ્લેષણ અને સંપૂર્ણ જીવન નિષ્કર્ષ રિપોર્ટ ઓનલાઇન બનાવો.">
+<meta name="keywords" content="ગુજરાતી કુંડળી, જન્મ કુંડળી ઓનલાઇન, kundali online gujarati, panchang, kundali milan, vedic astrology, જ્યોતિષ, નિગમાયુ જ્યોતિષ">
+<meta name="robots" content="index, follow">
+<meta name="author" content="સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી">
+<meta property="og:title" content="નિગમાયુ જ્યોતિષ — ગુજરાતી કુંડળી ઓનલાઇન">
+<meta property="og:description" content="મફત ગુજરાતી જન્મ કુંડળી, પંચાંગ, કુંડળી મિલન અને સંપૂર્ણ જીવન નિષ્કર્ષ રિપોર્ટ — પરંપરાગત વૈદિક જ્યોતિષ પદ્ધતિ પર આધારિત.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1A0A00">
 <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Noto+Sans+Gujarati:wght@300;400;600;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -623,12 +631,80 @@
     box-shadow: 0 6px 20px rgba(212,160,23,0.3);
   }
 
+  /* Dedicated printable report (built by JS in #printReportArea) */
+  .whatsapp-btn {
+    background: linear-gradient(135deg, #25D366, #128C7E) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 20px rgba(37,211,102,0.3) !important;
+  }
+
+  #printReportArea { display: none; }
+
   @media print {
-    .header, .input-section, .print-btn, .ornament-divider, nav, .tab-nav { display: none !important; }
-    .conclusion-section { page-break-after: always; }
-    body { background: #fff; color: #000; }
-    .conclusion-wrap, .conclusion-period, .conclusion-final { background: #fff; color: #000; border-color: #999; }
-    .conclusion-section p, .conclusion-period-body, .conclusion-intro { color: #111; }
+    @page { margin: 15mm 14mm; }
+
+    body * { visibility: hidden !important; }
+    #printReportArea, #printReportArea * { visibility: visible !important; }
+
+    #printReportArea {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      background: #fff;
+      color: #111;
+      font-family: 'Noto Sans Gujarati', sans-serif;
+    }
+
+    #printReportArea .print-report-header {
+      text-align: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #C8860A;
+    }
+    #printReportArea .print-report-om { font-size: 1.6rem; margin-bottom: 2px; }
+    #printReportArea .print-report-title { font-family: 'Yatra One', cursive; font-size: 1.6rem; color: #8B1A1A; }
+    #printReportArea .print-report-subtitle { font-size: 0.85rem; color: #555; margin-top: 2px; }
+
+    #printReportArea .print-report-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 22px;
+      font-size: 0.82rem;
+      color: #333;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #printReportArea .conclusion-wrap,
+    #printReportArea .conclusion-period,
+    #printReportArea .conclusion-final {
+      background: #fff !important;
+      color: #111 !important;
+      box-shadow: none !important;
+      border-color: #bbb !important;
+    }
+    #printReportArea .conclusion-section { page-break-inside: avoid; break-inside: avoid; margin-bottom: 1.3rem; }
+    #printReportArea .conclusion-section-title { color: #8B1A1A !important; border-bottom-color: #ddd !important; }
+    #printReportArea .conclusion-section p,
+    #printReportArea .conclusion-period-body,
+    #printReportArea .conclusion-intro { color: #222 !important; }
+    #printReportArea .conclusion-period-head { color: #8B1A1A !important; }
+    #printReportArea .conclusion-period.caution { border-left-color: #B23A3A !important; }
+    #printReportArea .conclusion-period.favorable { border-left-color: #2E7D32 !important; }
+    #printReportArea .conclusion-period.effort { border-left-color: #2A5FA5 !important; }
+    #printReportArea .conclusion-disclaimer { color: #555 !important; border-top-color: #ccc !important; }
+
+    #printReportArea .print-report-footer {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 2px solid #C8860A;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #333;
+      line-height: 1.7;
+    }
   }
 
   .pred-house {
@@ -950,6 +1026,7 @@
 </style>
 </head>
 <body>
+<div id="printReportArea"></div>
 <div id="starfield"></div>
 <datalist id="worldCities"></datalist>
 <script>
@@ -1437,8 +1514,9 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Full Life Conclusion Report -->
   <div class="section-header"><h2>📜 સંપૂર્ણ જીવન નિષ્કર્ષ (Complete Life Conclusion)</h2></div>
   <div class="conclusion-wrap" id="lifeConclusionSection"></div>
-  <div style="text-align:center;">
-    <button class="print-btn" onclick="window.print()">🖨️ નિષ્કર્ષ પ્રિન્ટ / PDF કરો</button>
+  <div style="text-align:center; display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap;">
+    <button class="print-btn" onclick="printLifeConclusion()">🖨️ નિષ્કર્ષ પ્રિન્ટ / PDF કરો</button>
+    <button class="print-btn whatsapp-btn" onclick="shareLifeConclusionWhatsApp()">📲 WhatsApp પર શેર કરો</button>
   </div>
 
   <div class="ornament-divider">॥ ॐ तत् सत् ॥</div>
@@ -2988,6 +3066,73 @@ function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, 
   return behaviourHtml + healthAccidentHtml + marriageHtml + toughHtml + hardWorkHtml + finalHtml;
 }
 
+// ==================== REPORT PRINT / SHARE ====================
+
+function printLifeConclusion() {
+  const el = document.getElementById('lifeConclusionSection');
+  if (!el || !el.innerHTML.trim()) {
+    alert('કૃપા કરી પહેલા કુંડળી બનાવો.');
+    return;
+  }
+  const name  = document.getElementById('name').value || 'જાતક';
+  const dob   = document.getElementById('dob').value || '-';
+  const tob   = document.getElementById('tob').value || '-';
+  const pob   = document.getElementById('pob').value || '-';
+  const today = new Date().toLocaleDateString('en-GB');
+
+  document.getElementById('printReportArea').innerHTML = `
+    <div class="print-report-header">
+      <div class="print-report-om">🕉️</div>
+      <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
+      <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
+    </div>
+    <div class="print-report-meta">
+      <span><b>નામ:</b> ${name}</span>
+      <span><b>જન્મ તારીખ:</b> ${dob}</span>
+      <span><b>જન્મ સમય:</b> ${tob}</span>
+      <span><b>જન્મ સ્થળ:</b> ${pob}</span>
+      <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
+    </div>
+    <div class="print-report-body">${el.innerHTML}</div>
+    <div class="print-report-footer">
+      🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
+      સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
+      નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
+    </div>`;
+
+  window.print();
+}
+
+window.addEventListener('afterprint', () => {
+  const area = document.getElementById('printReportArea');
+  if (area) area.innerHTML = '';
+});
+
+function shareLifeConclusionWhatsApp() {
+  const el = document.getElementById('lifeConclusionSection');
+  if (!el || !el.innerHTML.trim()) {
+    alert('કૃપા કરી પહેલા કુંડળી બનાવો.');
+    return;
+  }
+  const name = document.getElementById('name').value || 'જાતક';
+  const dob  = document.getElementById('dob').value || '-';
+  const tob  = document.getElementById('tob').value || '-';
+  const pob  = document.getElementById('pob').value;
+
+  const text =
+`🕉️ *નિગમાયુ જ્યોતિષ — સંપૂર્ણ જીવન નિષ્કર્ષ*
+નામ: ${name}
+જન્મ: ${dob}, ${tob}${pob ? ' — ' + pob : ''}
+
+આ કુંડળીનો સંપૂર્ણ રિપોર્ટ નિગમાયુ જ્યોતિષ પર તૈયાર થયો છે. સંપૂર્ણ રિપોર્ટ PDF તરીકે 🖨️ બટનથી સેવ કરીને મોકલી શકાય છે.
+
+વધુ વિગત અને વ્યક્તિગત સલાહ માટે સંપર્ક કરો:
+📞 સંજયકુમાર શાસ્ત્રી — 98254 70113
+📞 નિગમ શાસ્ત્રી — 70969 34877`;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
 // ==================== DASHA CALCULATIONS ====================
 
 function calculateVimshottariDasha(moonLon, birthDate) {
@@ -4084,6 +4229,35 @@ window.onload = () => {
   ['b_lon','g_lon'].forEach(id => { const el=document.getElementById(id); if(el) el.value='72.5714'; });
 };
 </script>
+
+<!-- ══ ABOUT ASTROLOGER SECTION ══ -->
+<div style="max-width:900px;margin:2.5rem auto 0;padding:0 1rem;">
+  <div style="
+    background: linear-gradient(135deg, rgba(45,21,5,0.85), rgba(26,10,0,0.95));
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,160,23,0.15);
+  ">
+    <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+      <div style="font-size:2.4rem;line-height:1;">🙏</div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-family:'Yatra One',cursive;font-size:1.35rem;color:var(--gold);margin-bottom:0.3rem;">
+          જ્યોતિષાચાર્ય વિશે
+        </div>
+        <div style="font-size:1.05rem;font-weight:700;color:rgba(255,248,240,0.92);margin-bottom:0.9rem;">
+          સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી <span style="font-weight:400;color:rgba(255,220,150,0.7);font-size:0.85rem;">(લાલભાઈ શાસ્ત્રી — પુંધરાવાળા)</span>
+        </div>
+        <p style="font-size:0.9rem;color:rgba(255,248,240,0.8);line-height:1.9;text-align:justify;margin-bottom:0.8rem;">
+          સંજયકુમાર શાસ્ત્રી પરંપરાગત વૈદિક જ્યોતિષ પદ્ધતિના અભ્યાસુ છે અને વર્ષોથી કુંડળી-વિચાર, ગ્રહ-શાંતિ, મુહૂર્ત, વાસ્તુ અને કુંડળી મિલન અંગે વ્યક્તિગત સલાહ આપી રહ્યા છે. તેમની સેવાઓનો લાભ સ્થાનિક તેમજ દૂર રહેતા પરિવારો પણ ફોન અને રૂબરૂ મુલાકાત દ્વારા લે છે.
+        </p>
+        <p style="font-size:0.9rem;color:rgba(255,248,240,0.8);line-height:1.9;text-align:justify;">
+          આ વેબસાઈટ (નિગમાયુ જ્યોતિષ) તેમના પુત્ર નિગમ શાસ્ત્રી દ્વારા વિકસાવવામાં આવેલ છે, જેથી પરંપરાગત ગણતરી-પદ્ધતિ સૌ કોઈ માટે સરળતાથી ઓનલાઇન ઉપલબ્ધ થાય — જ્યારે મહત્વના જીવન-નિર્ણયો માટે રૂબરૂ કે ફોન પર જ્યોતિષાચાર્યની સલાહ લેવાની ભલામણ કરવામાં આવે છે.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ CONTACT SECTION ══ -->
 <div style="
