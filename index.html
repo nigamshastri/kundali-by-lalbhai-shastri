@@ -362,6 +362,50 @@
   .planet-details { font-size: 0.85rem; color: rgba(255,248,240,0.75); line-height: 1.8; }
   .planet-details span { color: var(--cream); font-weight: 600; }
 
+  .planet-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.12rem 0.5rem;
+    border-radius: 20px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    letter-spacing: 0.3px;
+  }
+  .retro-badge { background: rgba(74,144,217,0.2); color: #7FB4EE; border: 1px solid rgba(74,144,217,0.4); }
+  .combust-badge { background: rgba(209,69,69,0.18); color: #E88888; border: 1px solid rgba(209,69,69,0.4); }
+
+  /* Yoga cards */
+  .yoga-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+  }
+  .yoga-card {
+    background: linear-gradient(135deg, rgba(45,21,5,0.8), rgba(26,10,0,0.9));
+    border: 1px solid rgba(212,160,23,0.25);
+    border-left: 3px solid var(--gold);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+  }
+  .yoga-card-title { font-family:'Yatra One',cursive; color: var(--gold); font-size: 1.05rem; margin-bottom: 0.4rem; }
+  .yoga-card-text { font-size: 0.85rem; color: rgba(255,248,240,0.78); line-height: 1.7; }
+  .yoga-empty {
+    font-size: 0.9rem;
+    color: rgba(255,248,240,0.55);
+    padding: 1rem 0;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Ashtakavarga */
+  .sav-table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(212,160,23,0.2); }
+  .sav-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  .sav-table th, .sav-table td { padding: 0.6rem 0.5rem; text-align: center; font-size: 0.82rem; }
+  .sav-cell-strong { color: #6FCF6F; font-weight: 700; }
+  .sav-cell-weak { color: #E88888; font-weight: 700; }
+  .sav-note { font-size: 0.78rem; color: rgba(255,248,240,0.55); margin-top: 0.8rem; line-height: 1.7; }
+
   /* Rashi Info */
   .rashi-info-grid {
     display: grid;
@@ -1391,6 +1435,33 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
 
 <div class="results" id="results">
 
+  <!-- Consultation CTA -->
+  <div style="
+    background: linear-gradient(135deg, rgba(37,211,102,0.14), rgba(18,140,126,0.1));
+    border: 1px solid rgba(37,211,102,0.35);
+    border-radius: 14px;
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+  ">
+    <div style="font-size:0.92rem;color:rgba(255,248,240,0.85);line-height:1.6;">
+      📞 <b style="color:#F0D080;">વ્યક્તિગત સલાહ માટે સંપર્ક કરો</b> — આ કુંડળીની વિગતવાર સમજૂતી, ઉપાય અને ભવિષ્ય અંગે જ્યોતિષાચાર્ય સાથે સીધી વાત કરો.
+    </div>
+    <a href="https://wa.me/919825470113?text=%E0%AA%A8%E0%AA%AE%E0%AA%B8%E0%AB%8D%E0%AA%A4%E0%AB%87%2C%20%E0%AA%AE%E0%AA%BE%E0%AA%B0%E0%AB%87%20%E0%AA%AE%E0%AA%BE%E0%AA%B0%E0%AB%80%20%E0%AA%95%E0%AB%81%E0%AA%82%E0%AA%A1%E0%AA%B3%E0%AB%80%20%E0%AA%85%E0%AA%82%E0%AA%97%E0%AB%87%20%E0%AA%B5%E0%AB%8D%E0%AA%AF%E0%AA%95%E0%AB%8D%E0%AA%A4%E0%AA%BF%E0%AA%97%E0%AA%A4%20%E0%AA%B8%E0%AA%B2%E0%AA%BE%E0%AA%B9%20%E0%AA%9C%E0%AB%8B%E0%AA%88%E0%AA%8F%20%E0%AA%9B%E0%AB%87." target="_blank" style="
+      display:inline-flex;align-items:center;gap:0.5rem;flex-shrink:0;
+      background:linear-gradient(135deg,#25D366,#128C7E);
+      border-radius:25px;padding:0.6rem 1.4rem;
+      color:#fff;text-decoration:none;font-size:0.92rem;font-weight:700;
+      box-shadow:0 6px 20px rgba(37,211,102,0.3);
+    ">
+      📲 WhatsApp પર સંપર્ક કરો
+    </a>
+  </div>
+
   <!-- Basic Info -->
   <div class="section-header"><h2>🌟 જન્મ વિગત</h2></div>
   <div class="rashi-info-grid" id="basicInfoGrid"></div>
@@ -1432,6 +1503,14 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Planet Positions -->
   <div class="section-header"><h2>🪐 ગ્રહ સ્થિતિ</h2></div>
   <div class="planet-grid" id="planetGrid"></div>
+  <div style="font-size:0.78rem;color:rgba(255,248,240,0.5);margin:0.6rem 0 1.5rem;">
+    <span class="planet-badge retro-badge" style="margin-left:0;">℞ વક્રી</span> = ગ્રહની ગતિ પાછળની તરફ (Retrograde) &nbsp;·&nbsp;
+    <span class="planet-badge combust-badge">🔥 અસ્ત</span> = સૂર્યની અતિ નિકટ હોવાથી ગ્રહ નબળો (Combust)
+  </div>
+
+  <!-- Yoga Detection -->
+  <div class="section-header"><h2>✨ મુખ્ય યોગ</h2></div>
+  <div id="yogaSection"></div>
 
   <!-- Divisional Charts: D9 Navamsa, D10 Dashamsha -->
   <div class="section-header"><h2>🔷 વર્ગ કુંડળી (D9 નવમાંશ · D10 દશમાંશ)</h2></div>
@@ -2821,6 +2900,149 @@ function dignityNote(planet, lon) {
   return '';
 }
 
+// ==================== RETROGRADE (વક્રી) & COMBUSTION (અસ્ત) ====================
+
+// Retrograde: compare a planet's sidereal longitude "today" vs "yesterday" (jd-1).
+// If the longitude has decreased (accounting for 0°/360° wrap), the planet is retrograde.
+// Sun & Moon are never retrograde. Rahu/Ketu (mean lunar node) are always retrograde by definition.
+function computeRetrogradeFlags(positions, jd, lat, lonCoord) {
+  const flags = { Sun: false, Moon: false, Rahu: true, Ketu: true };
+  const checkPlanets = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+  const prevPositions = calculateAllPlanetsFromJD(jd - 1, lat, lonCoord).positions;
+  checkPlanets.forEach(p => {
+    let delta = positions[p] - prevPositions[p];
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    flags[p] = delta < 0;
+  });
+  return flags;
+}
+
+// Combustion (અસ્ત): a planet too close to the Sun loses strength. Orb (degrees)
+// varies by planet, and is tighter for Mercury/Venus/Mars when retrograde
+// (widely-cited Vedic combustion orbs). Sun and the shadow planets (Rahu/Ketu)
+// are excluded — combustion is only reckoned for the other five planets + Moon.
+const COMBUST_ORB = {
+  Moon:    { normal: 12, retro: 12 },
+  Mars:    { normal: 17, retro: 8  },
+  Mercury: { normal: 14, retro: 12 },
+  Jupiter: { normal: 11, retro: 11 },
+  Venus:   { normal: 10, retro: 8  },
+  Saturn:  { normal: 15, retro: 15 }
+};
+
+function angularSeparation(a, b) {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+function computeCombustionFlags(positions, retroFlags) {
+  const flags = {};
+  const sunLon = positions['Sun'];
+  Object.keys(COMBUST_ORB).forEach(p => {
+    const orb = retroFlags[p] ? COMBUST_ORB[p].retro : COMBUST_ORB[p].normal;
+    flags[p] = angularSeparation(positions[p], sunLon) <= orb;
+  });
+  return flags;
+}
+
+// ==================== YOGA DETECTION ====================
+// A focused set of well-known, classically-defined yogas — kept to combinations
+// with clear, unambiguous rules rather than every yoga in the texts.
+function detectYogas(positions, lagnaRashi) {
+  const yogas = [];
+  const rashiOf = p => getRashi(positions[p]);
+
+  // 1. Gajakesari Yoga — Jupiter in a kendra (1,4,7,10) counted from the Moon.
+  const moonR = rashiOf('Moon'), jupR = rashiOf('Jupiter');
+  const jupFromMoon = ((jupR - moonR + 12) % 12);
+  if ([0, 3, 6, 9].includes(jupFromMoon)) {
+    yogas.push({
+      name: '🐘 ગજકેસરી યોગ',
+      text: 'ચંદ્રથી કેન્દ્રમાં (1-4-7-10) ગુરુ સ્થિત હોવાથી ગજકેસરી યોગ બને છે — બુદ્ધિ, કીર્તિ અને સામાજિક પ્રતિષ્ઠામાં વધારો કરે છે.'
+    });
+  }
+
+  // 2. Budhaditya Yoga — Sun and Mercury conjunct in the same sign.
+  if (rashiOf('Sun') === rashiOf('Mercury')) {
+    yogas.push({
+      name: '☀️ બુધાદિત્ય યોગ',
+      text: 'સૂર્ય અને બુધ એક જ રાશિમાં હોવાથી બુધાદિત્ય યોગ બને છે — બુદ્ધિ, વિશ્લેષણ-શક્તિ અને વહીવટી કુશળતા વધારે છે.'
+    });
+  }
+
+  // 3. Chandra-Mangal Yoga — Moon and Mars conjunct in the same sign (wealth-giving).
+  if (rashiOf('Moon') === rashiOf('Mars')) {
+    yogas.push({
+      name: '🌙 ચંદ્ર-મંગળ યોગ',
+      text: 'ચંદ્ર અને મંગળ એક જ રાશિમાં હોવાથી ચંદ્ર-મંગળ યોગ બને છે — ધન-પ્રાપ્તિ અને સાહસિક વૃત્તિ માટે અનુકૂળ ગણાય છે.'
+    });
+  }
+
+  // 4. Panch Mahapurush Yoga — Mars/Mercury/Jupiter/Venus/Saturn in own sign or
+  // exaltation, positioned in a kendra (1,4,7,10) from the Lagna.
+  const MAHAPURUSH = {
+    Mars:    '🔥 રુચક યોગ',
+    Mercury: '📗 ભદ્ર યોગ',
+    Jupiter: '🌊 હંસ યોગ',
+    Venus:   '💎 માલવ્ય યોગ',
+    Saturn:  '⛰️ શશ યોગ'
+  };
+  Object.keys(MAHAPURUSH).forEach(p => {
+    const dignity = planetDignity(p, positions[p]);
+    const house = houseOfPlanet(positions[p], lagnaRashi);
+    if ((dignity === 'own' || dignity === 'exalted') && [1, 4, 7, 10].includes(house)) {
+      yogas.push({
+        name: MAHAPURUSH[p] + ' (પંચ મહાપુરુષ યોગ)',
+        text: planetGu(p) + ' કેન્દ્ર સ્થાનમાં (' + house + 'મા ભાવમાં) સ્વ-રાશિ કે ઉચ્ચનો હોવાથી ' + MAHAPURUSH[p].split(' ').slice(1).join(' ') + ' બને છે — વ્યક્તિત્વ, નેતૃત્વ અને સફળતામાં નોંધપાત્ર વધારો કરે છે.'
+      });
+    }
+  });
+
+  // 5. Raj Yoga — a kendra lord (1,4,7,10) and a trikona lord (1,5,9) conjunct
+  // in the same house (a simplified, conjunction-only reading of the classical rule).
+  const kendraLords  = [1, 4, 7, 10].map(h => houseLordPlanet(h, lagnaRashi));
+  const trikonaLords = [1, 5, 9].map(h => houseLordPlanet(h, lagnaRashi));
+  const seen = new Set();
+  kendraLords.forEach(kl => {
+    trikonaLords.forEach(tl => {
+      if (kl === tl) return;
+      const key = [kl, tl].sort().join('-');
+      if (seen.has(key)) return;
+      if (houseOfPlanet(positions[kl], lagnaRashi) === houseOfPlanet(positions[tl], lagnaRashi)) {
+        seen.add(key);
+        yogas.push({
+          name: '👑 રાજયોગ',
+          text: 'કેન્દ્રેશ ' + planetGu(kl) + ' અને ત્રિકોણેશ ' + planetGu(tl) + ' એક જ ભાવમાં (' + houseOfPlanet(positions[kl], lagnaRashi) + 'મા ભાવમાં) ભેગા હોવાથી રાજયોગ બને છે — પ્રતિષ્ઠા, સત્તા અને ઉન્નતિ સૂચવે છે.'
+        });
+      }
+    });
+  });
+
+  // 6. Dhana Yoga — 2nd lord (wealth) and 11th lord (gains) conjunct in the same house.
+  const lord2 = houseLordPlanet(2, lagnaRashi), lord11 = houseLordPlanet(11, lagnaRashi);
+  if (lord2 !== lord11 && houseOfPlanet(positions[lord2], lagnaRashi) === houseOfPlanet(positions[lord11], lagnaRashi)) {
+    yogas.push({
+      name: '💰 ધન યોગ',
+      text: 'દ્વિતીયેશ ' + planetGu(lord2) + ' અને એકાદશેશ ' + planetGu(lord11) + ' એક જ ભાવમાં ભેગા હોવાથી ધન યોગ બને છે — આર્થિક સ્થિરતા અને ધન-પ્રાપ્તિ માટે અનુકૂળ.'
+    });
+  }
+
+  return yogas;
+}
+
+function renderYogas(positions, lagnaRashi) {
+  const yogas = detectYogas(positions, lagnaRashi);
+  if (yogas.length === 0) {
+    return '<div class="yoga-empty">આ કુંડળીમાં ઉપરોક્ત મુખ્ય યોગ-સંયોજનો (ગજકેસરી, રાજયોગ, પંચ મહાપુરુષ વગેરે) ચોક્કસ સ્વરૂપે જોવા મળતા નથી — તેનો અર્થ એ નથી કે કુંડળી નબળી છે, અન્ય અસંખ્ય યોગ-સંયોજનો શાસ્ત્રમાં વર્ણવેલ છે જેની વિગતવાર ચકાસણી જ્યોતિષાચાર્ય રૂબરૂ કરી શકે.</div>';
+  }
+  return '<div class="yoga-grid">' + yogas.map(y => `
+    <div class="yoga-card">
+      <div class="yoga-card-title">${y.name}</div>
+      <div class="yoga-card-text">${y.text}</div>
+    </div>`).join('') + '</div>';
+}
+
 // Classical special aspects (drishti): every planet aspects the 7th house from
 // itself; Mars additionally aspects the 4th & 8th; Jupiter the 5th & 9th; Saturn the 3rd & 10th.
 function getAspectedHouses(planet, house) {
@@ -3533,22 +3755,29 @@ async function generateKundali() {
 
 
     const planetKeys = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
+    const retroFlags = computeRetrogradeFlags(positions, jd, lat, lon);
+    const combustFlags = computeCombustionFlags(positions, retroFlags);
     const planetGrid = document.getElementById('planetGrid');
     planetGrid.innerHTML = planetKeys.map((p, i) => {
-      const lon = positions[p];
-      const rashi = getRashi(lon);
-      const nak = getNakshatra(lon);
+      const plon = positions[p];
+      const rashi = getRashi(plon);
+      const nak = getNakshatra(plon);
       const house = (rashi - lagnaRashi + 12) % 12 + 1;
+      const badges = (retroFlags[p] ? '<span class="planet-badge retro-badge">℞ વક્રી</span>' : '') +
+                     (combustFlags[p] ? '<span class="planet-badge combust-badge">🔥 અસ્ત</span>' : '');
       return `<div class="planet-card" style="--planet-color:${PLANET_COLORS[i]}">
-        <div class="planet-name">${PLANETS_GU[i]} </div>
+        <div class="planet-name">${PLANETS_GU[i]} ${badges}</div>
         <div class="planet-details">
           રાશિ: <span>${RASHIS_GU[rashi]}</span><br>
           ભાવ: <span>${house}મો ભાવ</span><br>
           નક્ષત્ર: <span>${NAKSHATRAS_GU[nak]}</span><br>
-          અંશ: <span>${lon.toFixed(2)}°</span>
+          અંશ: <span>${plon.toFixed(2)}°</span>
         </div>
       </div>`;
     }).join('');
+
+    // Yoga detection
+    document.getElementById('yogaSection').innerHTML = renderYogas(positions, lagnaRashi);
 
     // KP Section
     document.getElementById('kpSection').innerHTML = renderKPSection(positions);
@@ -4319,6 +4548,16 @@ window.onload = () => {
         " onmouseover="this.style.background='linear-gradient(135deg,rgba(255,140,0,0.6),rgba(200,80,0,0.6))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(200,100,0,0.5),rgba(150,60,0,0.5))'">
           📞 98254 70113
         </a>
+        <a href="https://wa.me/919825470113?text=%E0%AA%A8%E0%AA%AE%E0%AA%B8%E0%AB%8D%E0%AA%A4%E0%AB%87%2C%20%E0%AA%AE%E0%AA%BE%E0%AA%B0%E0%AB%87%20%E0%AA%95%E0%AB%81%E0%AA%82%E0%AA%A1%E0%AA%B3%E0%AB%80%20%E0%AA%85%E0%AA%82%E0%AA%97%E0%AB%87%20%E0%AA%B5%E0%AB%8D%E0%AA%AF%E0%AA%95%E0%AB%8D%E0%AA%A4%E0%AA%BF%E0%AA%97%E0%AA%A4%20%E0%AA%B8%E0%AA%B2%E0%AA%BE%E0%AA%B9%20%E0%AA%9C%E0%AB%8B%E0%AA%88%E0%AA%8F%20%E0%AA%9B%E0%AB%87." target="_blank" style="
+          display:inline-flex;align-items:center;gap:0.5rem;
+          background:linear-gradient(135deg,#25D366,#128C7E);
+          border:1px solid rgba(37,211,102,0.6);
+          border-radius:25px;padding:0.45rem 1.1rem;margin-left:0.5rem;margin-top:0.5rem;
+          color:#fff;text-decoration:none;font-size:0.92rem;font-weight:600;
+          transition:all 0.25s;letter-spacing:0.5px;
+        ">
+          📲 WhatsApp
+        </a>
       </div>
 
       <!-- Card 2 — Nigam Shastri -->
@@ -4351,6 +4590,16 @@ window.onload = () => {
           transition:all 0.25s;letter-spacing:0.5px;
         " onmouseover="this.style.background='linear-gradient(135deg,rgba(255,140,0,0.6),rgba(200,80,0,0.6))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(200,100,0,0.5),rgba(150,60,0,0.5))'">
           📞 70969 34877
+        </a>
+        <a href="https://wa.me/917096934877?text=%E0%AA%A8%E0%AA%AE%E0%AA%B8%E0%AB%8D%E0%AA%A4%E0%AB%87%2C%20%E0%AA%AE%E0%AA%BE%E0%AA%B0%E0%AB%87%20%E0%AA%95%E0%AB%81%E0%AA%82%E0%AA%A1%E0%AA%B3%E0%AB%80%20%E0%AA%85%E0%AA%82%E0%AA%97%E0%AB%87%20%E0%AA%B5%E0%AB%8D%E0%AA%AF%E0%AA%95%E0%AB%8D%E0%AA%A4%E0%AA%BF%E0%AA%97%E0%AA%A4%20%E0%AA%B8%E0%AA%B2%E0%AA%BE%E0%AA%B9%20%E0%AA%9C%E0%AB%8B%E0%AA%88%E0%AA%8F%20%E0%AA%9B%E0%AB%87." target="_blank" style="
+          display:inline-flex;align-items:center;gap:0.5rem;
+          background:linear-gradient(135deg,#25D366,#128C7E);
+          border:1px solid rgba(37,211,102,0.6);
+          border-radius:25px;padding:0.45rem 1.1rem;margin-left:0.5rem;margin-top:0.5rem;
+          color:#fff;text-decoration:none;font-size:0.92rem;font-weight:600;
+          transition:all 0.25s;letter-spacing:0.5px;
+        ">
+          📲 WhatsApp
         </a>
       </div>
     </div>
