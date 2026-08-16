@@ -375,6 +375,9 @@
     letter-spacing: 0.3px;
   }
   .retro-badge { background: rgba(74,144,217,0.2); color: #7FB4EE; border: 1px solid rgba(74,144,217,0.4); }
+  .dignity-exalted { background: rgba(111,207,111,0.18); color: #6FCF6F; border: 1px solid rgba(111,207,111,0.4); }
+  .dignity-debil { background: rgba(232,136,136,0.18); color: #E88888; border: 1px solid rgba(232,136,136,0.4); }
+  .dignity-own { background: rgba(212,160,23,0.2); color: #F0D080; border: 1px solid rgba(212,160,23,0.4); }
   .combust-badge { background: rgba(209,69,69,0.18); color: #E88888; border: 1px solid rgba(209,69,69,0.4); }
 
   /* Yoga cards */
@@ -1437,8 +1440,11 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Planet Positions -->
   <div class="section-header"><h2>🪐 ગ્રહ સ્થિતિ</h2></div>
   <div class="planet-grid" id="planetGrid"></div>
-  <div style="font-size:0.78rem;color:rgba(255,248,240,0.5);margin:0.6rem 0 1.5rem;">
-    <span class="planet-badge retro-badge" style="margin-left:0;">℞ વક્રી</span> = ગ્રહની ગતિ પાછળની તરફ (Retrograde) &nbsp;·&nbsp;
+  <div style="font-size:0.78rem;color:rgba(255,248,240,0.5);margin:0.6rem 0 1.5rem;line-height:2;">
+    <span class="planet-badge dignity-exalted" style="margin-left:0;">⬆️ ઉચ્ચ</span> = ઉચ્ચ રાશિમાં (Exalted) &nbsp;·&nbsp;
+    <span class="planet-badge dignity-debil">⬇️ નીચ</span> = નીચ રાશિમાં (Debilitated) &nbsp;·&nbsp;
+    <span class="planet-badge dignity-own">🏠 સ્વ-રાશિ</span> = સ્વ-રાશિમાં (Own sign) &nbsp;·&nbsp;
+    <span class="planet-badge retro-badge">℞ વક્રી</span> = ગ્રહની ગતિ પાછળની તરફ (Retrograde) &nbsp;·&nbsp;
     <span class="planet-badge combust-badge">🔥 અસ્ત</span> = સૂર્યની અતિ નિકટ હોવાથી ગ્રહ નબળો (Combust)
   </div>
 
@@ -1844,6 +1850,16 @@ function calculateAllPlanets(dob, tob, lat, lon) {
 }
 
 function getRashi(lon) { return Math.floor(lon / 30); }
+
+// Degree of a planet WITHIN its own rashi (0°–30°), in the traditional
+// degrees–minutes notation astrologers actually read (e.g. "14° 23'") —
+// not the raw 0–360° sidereal longitude.
+function formatDegreeInSign(lon) {
+  const withinSign = ((lon % 30) + 30) % 30;
+  const deg = Math.floor(withinSign);
+  const min = Math.floor((withinSign - deg) * 60);
+  return deg + '° ' + String(min).padStart(2, '0') + "'";
+}
 function getNakshatra(lon) { return Math.floor(lon / (360/27)); }
 function getNakshatraPada(lon) { return Math.floor((lon % (360/27)) / (360/108)) + 1; }
 function getDegreeInRashi(lon) { return lon % 30; }
@@ -3878,7 +3894,13 @@ async function generateKundali() {
       const rashi = getRashi(plon);
       const nak = getNakshatra(plon);
       const house = (rashi - lagnaRashi + 12) % 12 + 1;
-      const badges = (retroFlags[p] ? '<span class="planet-badge retro-badge">℞ વક્રી</span>' : '') +
+      const dignity = planetDignity(p, plon);
+      const dignityBadge =
+        dignity === 'exalted'     ? '<span class="planet-badge dignity-exalted">⬆️ ઉચ્ચ</span>' :
+        dignity === 'debilitated' ? '<span class="planet-badge dignity-debil">⬇️ નીચ</span>' :
+        dignity === 'own'         ? '<span class="planet-badge dignity-own">🏠 સ્વ-રાશિ</span>' : '';
+      const badges = dignityBadge +
+                     (retroFlags[p] ? '<span class="planet-badge retro-badge">℞ વક્રી</span>' : '') +
                      (combustFlags[p] ? '<span class="planet-badge combust-badge">🔥 અસ્ત</span>' : '');
       return `<div class="planet-card" style="--planet-color:${PLANET_COLORS[i]}">
         <div class="planet-name">${PLANETS_GU[i]} ${badges}</div>
@@ -3886,7 +3908,8 @@ async function generateKundali() {
           રાશિ: <span>${RASHIS_GU[rashi]}</span><br>
           ભાવ: <span>${house}મો ભાવ</span><br>
           નક્ષત્ર: <span>${NAKSHATRAS_GU[nak]}</span><br>
-          અંશ: <span>${plon.toFixed(2)}°</span>
+          અંશ (રાશિમાં): <span>${formatDegreeInSign(plon)}</span><br>
+          સંપૂર્ણ રેખાંશ: <span>${plon.toFixed(2)}°</span>
         </div>
       </div>`;
     }).join('');
