@@ -675,94 +675,13 @@
     box-shadow: 0 6px 20px rgba(212,160,23,0.3);
   }
 
-  /* Dedicated printable report (built by JS in #printReportArea) */
+  /* Note: the printable report is now built and printed in its own isolated
+     window/document (see printLifeConclusion() in JS) rather than in this
+     page, so it no longer needs print-specific CSS here. */
   .whatsapp-btn {
     background: linear-gradient(135deg, #25D366, #128C7E) !important;
     color: #fff !important;
     box-shadow: 0 6px 20px rgba(37,211,102,0.3) !important;
-  }
-
-  #printReportArea { display: none; }
-
-  @media print {
-    @page { margin: 15mm 14mm; }
-
-    body * { visibility: hidden !important; }
-    #printReportArea, #printReportArea * { visibility: visible !important; }
-
-    #printReportArea {
-      display: block !important;
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      background: #fff;
-      color: #111;
-      font-family: 'Noto Sans Gujarati', sans-serif;
-    }
-
-    #printReportArea .print-watermark {
-      position: absolute;
-      top: 42%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-30deg);
-      font-family: 'Yatra One', cursive;
-      font-size: 3.4rem;
-      color: rgba(139,26,26,0.07);
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 0;
-    }
-    #printReportArea .print-report-content { position: relative; z-index: 1; }
-
-    #printReportArea .print-report-header {
-      text-align: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #C8860A;
-    }
-    #printReportArea .print-report-om { font-size: 1.6rem; margin-bottom: 2px; }
-    #printReportArea .print-report-title { font-family: 'Yatra One', cursive; font-size: 1.6rem; color: #8B1A1A; }
-    #printReportArea .print-report-subtitle { font-size: 0.85rem; color: #555; margin-top: 2px; }
-
-    #printReportArea .print-report-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 22px;
-      font-size: 0.82rem;
-      color: #333;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    #printReportArea .conclusion-wrap,
-    #printReportArea .conclusion-period,
-    #printReportArea .conclusion-final {
-      background: #fff !important;
-      color: #111 !important;
-      box-shadow: none !important;
-      border-color: #bbb !important;
-    }
-    #printReportArea .conclusion-section { page-break-inside: avoid; break-inside: avoid; margin-bottom: 1.3rem; }
-    #printReportArea .conclusion-section-title { color: #8B1A1A !important; border-bottom-color: #ddd !important; }
-    #printReportArea .conclusion-section p,
-    #printReportArea .conclusion-period-body,
-    #printReportArea .conclusion-intro { color: #222 !important; }
-    #printReportArea .conclusion-period-head { color: #8B1A1A !important; }
-    #printReportArea .conclusion-period.caution { border-left-color: #B23A3A !important; }
-    #printReportArea .conclusion-period.favorable { border-left-color: #2E7D32 !important; }
-    #printReportArea .conclusion-period.effort { border-left-color: #2A5FA5 !important; }
-    #printReportArea .conclusion-disclaimer { color: #555 !important; border-top-color: #ccc !important; }
-
-    #printReportArea .print-report-footer {
-      margin-top: 20px;
-      padding-top: 10px;
-      border-top: 2px solid #C8860A;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #333;
-      line-height: 1.7;
-    }
   }
 
   .pred-house {
@@ -1084,7 +1003,6 @@
 </style>
 </head>
 <body>
-<div id="printReportArea"></div>
 <div id="starfield"></div>
 <datalist id="worldCities"></datalist>
 <script>
@@ -3313,36 +3231,104 @@ function printLifeConclusion() {
   const pob   = document.getElementById('pob').value || '-';
   const today = new Date().toLocaleDateString('en-GB');
 
-  document.getElementById('printReportArea').innerHTML = `
-    <div class="print-watermark">સંજયકુમાર શાસ્ત્રી</div>
-    <div class="print-report-content">
-      <div class="print-report-header">
-        <div class="print-report-om">🕉️</div>
-        <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
-        <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
-      </div>
-      <div class="print-report-meta">
-        <span><b>નામ:</b> ${name}</span>
-        <span><b>જન્મ તારીખ:</b> ${dob}</span>
-        <span><b>જન્મ સમય:</b> ${tob}</span>
-        <span><b>જન્મ સ્થળ:</b> ${pob}</span>
-        <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
-      </div>
-      <div class="print-report-body">${el.innerHTML}</div>
-      <div class="print-report-footer">
-        🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
-        સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
-        નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
-      </div>
-    </div>`;
+  // Built and printed in a fresh, isolated window/document — not the main SPA page.
+  // This keeps the printed page count tied only to the report's own content
+  // (the main page's hidden tabs/charts no longer affect print pagination),
+  // and makes the watermark render reliably since there is no visibility-hiding trick involved.
+  const reportDoc = `<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<title>${name} — સંપૂર્ણ જીવન નિષ્કર્ષ</title>
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans Gujarati', sans-serif;
+    color: #111;
+    margin: 0;
+    padding: 30px 36px;
+    position: relative;
+    background: #fff;
+  }
+  .print-watermark {
+    position: fixed;
+    top: 45%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-family: 'Yatra One', cursive;
+    font-size: 3.6rem;
+    color: rgba(139,26,26,0.11);
+    white-space: nowrap;
+    z-index: 0;
+  }
+  .content { position: relative; z-index: 1; }
+  .print-report-header { text-align:center; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #C8860A; }
+  .print-report-om { font-size:1.7rem; margin-bottom:2px; }
+  .print-report-title { font-family:'Yatra One',cursive; font-size:1.7rem; color:#8B1A1A; }
+  .print-report-subtitle { font-size:0.9rem; color:#555; margin-top:2px; }
+  .print-report-meta { display:flex; flex-wrap:wrap; gap:5px 22px; font-size:0.88rem; color:#333; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #ddd; }
+  .conclusion-section { margin-bottom: 1.4rem; page-break-inside: avoid; }
+  .conclusion-section-title { font-family:'Yatra One',cursive; font-size:1.25rem; color:#8B1A1A; border-bottom:1px solid #ddd; padding-bottom:7px; margin-bottom:12px; }
+  .conclusion-section p { color:#222; line-height:1.9; font-size:0.96rem; margin:0 0 10px; }
+  .conclusion-period { border:1px solid #ccc; border-left:4px solid #999; border-radius:6px; padding:12px 16px; margin-bottom:12px; }
+  .conclusion-period.caution { border-left-color:#B23A3A; }
+  .conclusion-period.favorable { border-left-color:#2E7D32; }
+  .conclusion-period.effort { border-left-color:#2A5FA5; }
+  .conclusion-period-head { font-weight:700; color:#8B1A1A; margin-bottom:5px; }
+  .conclusion-period-body { color:#222; font-size:0.92rem; line-height:1.8; }
+  .conclusion-disclaimer { font-size:0.82rem; color:#555; border-top:1px solid #ccc; padding-top:10px; margin-top:12px; }
+  .print-report-footer { margin-top:22px; padding-top:12px; border-top:2px solid #C8860A; text-align:center; font-size:0.85rem; color:#333; line-height:1.8; }
+  @page { margin: 15mm 14mm; }
+</style>
+</head>
+<body>
+  <div class="print-watermark">સંજયકુમાર શાસ્ત્રી</div>
+  <div class="content">
+    <div class="print-report-header">
+      <div class="print-report-om">🕉️</div>
+      <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
+      <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
+    </div>
+    <div class="print-report-meta">
+      <span><b>નામ:</b> ${name}</span>
+      <span><b>જન્મ તારીખ:</b> ${dob}</span>
+      <span><b>જન્મ સમય:</b> ${tob}</span>
+      <span><b>જન્મ સ્થળ:</b> ${pob}</span>
+      <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
+    </div>
+    <div class="print-report-body">${el.innerHTML}</div>
+    <div class="print-report-footer">
+      🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
+      સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
+      નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
+    </div>
+  </div>
+  <script>
+    window.onload = function () {
+      // Wait for the Gujarati webfont to actually finish loading before printing —
+      // printing too early (fixed timeout) can snapshot a fallback font mid-swap,
+      // which is what causes dropped/garbled conjuncts in the exported PDF.
+      if (window.document.fonts && window.document.fonts.ready) {
+        window.document.fonts.ready.then(function () {
+          setTimeout(function () { window.print(); }, 200);
+        });
+      } else {
+        setTimeout(function () { window.print(); }, 800);
+      }
+    };
+  <\/script>
+</body>
+</html>`;
 
-  window.print();
+  const printWin = window.open('', '_blank', 'width=850,height=1000');
+  if (!printWin) {
+    alert('પોપ-અપ બ્લોક થયેલ છે — કૃપા કરી બ્રાઉઝરમાં પોપ-અપ મંજૂરી આપો અને ફરી પ્રયત્ન કરો.');
+    return;
+  }
+  printWin.document.open();
+  printWin.document.write(reportDoc);
+  printWin.document.close();
 }
-
-window.addEventListener('afterprint', () => {
-  const area = document.getElementById('printReportArea');
-  if (area) area.innerHTML = '';
-});
 
 function shareLifeConclusionWhatsApp() {
   const el = document.getElementById('lifeConclusionSection');
