@@ -700,6 +700,20 @@
       font-family: 'Noto Sans Gujarati', sans-serif;
     }
 
+    #printReportArea .print-watermark {
+      position: absolute;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-family: 'Yatra One', cursive;
+      font-size: 3.4rem;
+      color: rgba(139,26,26,0.07);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 0;
+    }
+    #printReportArea .print-report-content { position: relative; z-index: 1; }
+
     #printReportArea .print-report-header {
       text-align: center;
       margin-bottom: 14px;
@@ -1511,6 +1525,10 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <!-- Yoga Detection -->
   <div class="section-header"><h2>✨ મુખ્ય યોગ</h2></div>
   <div id="yogaSection"></div>
+
+  <!-- Ashtakavarga -->
+  <div class="section-header"><h2>🔢 અષ્ટકવર્ગ (સર્વાષ્ટકવર્ગ)</h2></div>
+  <div id="ashtakavargaSection"></div>
 
   <!-- Divisional Charts: D9 Navamsa, D10 Dashamsha -->
   <div class="section-header"><h2>🔷 વર્ગ કુંડળી (D9 નવમાંશ · D10 દશમાંશ)</h2></div>
@@ -3043,6 +3061,70 @@ function renderYogas(positions, lagnaRashi) {
     </div>`).join('') + '</div>';
 }
 
+// ==================== ASHTAKAVARGA (સર્વાષ્ટકવર્ગ) ====================
+// Classical Parashari Bhinnashtakavarga contribution rules — for each of the
+// 7 planets' own chart, the houses (counted from each of the 8 contributors'
+// own position) that receive a bindu. Source: Brihat Parashara Hora Shastra,
+// Chapter 66. Verified against the standard per-planet bindu totals
+// (Sun 48, Moon 49, Mars 39, Mercury 54, Jupiter 56, Venus 52, Saturn 39 = 337).
+const ASHTAKAVARGA_RULES = {
+  Sun:     { Sun:[1,2,4,7,8,9,10,11], Moon:[3,6,10,11], Mars:[1,2,4,7,8,9,10,11], Mercury:[3,5,6,9,10,11,12], Jupiter:[5,6,9,11], Venus:[6,7,12], Saturn:[1,2,4,7,8,9,10,11], Lagna:[3,4,6,10,11,12] },
+  Moon:    { Sun:[3,6,7,8,10,11], Moon:[1,3,6,7,9,10,11], Mars:[2,3,5,6,10,11], Mercury:[1,3,4,5,7,8,10,11], Jupiter:[1,2,4,7,8,10,11], Venus:[3,4,5,7,9,10,11], Saturn:[3,5,6,11], Lagna:[3,6,10,11] },
+  Mars:    { Sun:[3,5,6,10,11], Moon:[3,6,11], Mars:[1,2,4,7,8,10,11], Mercury:[3,5,6,11], Jupiter:[6,10,11,12], Venus:[6,8,11,12], Saturn:[1,4,7,8,9,10,11], Lagna:[1,3,6,10,11] },
+  Mercury: { Sun:[5,6,9,11,12], Moon:[2,4,6,8,10,11], Mars:[1,2,4,7,8,9,10,11], Mercury:[1,3,5,6,9,10,11,12], Jupiter:[6,8,11,12], Venus:[1,2,3,4,5,8,9,11], Saturn:[1,2,4,7,8,9,10,11], Lagna:[1,2,4,6,8,10,11] },
+  Jupiter: { Sun:[1,2,3,4,7,8,9,10,11], Moon:[2,5,7,9,11], Mars:[1,2,4,7,8,10,11], Mercury:[1,2,4,5,6,9,10,11], Jupiter:[1,2,3,4,7,8,10,11], Venus:[2,5,6,9,10,11], Saturn:[3,5,6,12], Lagna:[1,2,4,5,6,7,9,10,11] },
+  Venus:   { Sun:[8,11,12], Moon:[1,2,3,4,5,8,9,11,12], Mars:[3,4,6,9,11,12], Mercury:[3,5,6,9,11], Jupiter:[5,8,9,10,11], Venus:[1,2,3,4,5,8,9,10,11], Saturn:[3,4,5,8,9,10,11], Lagna:[1,2,3,4,5,8,9,11] },
+  Saturn:  { Sun:[1,2,4,7,8,10,11], Moon:[3,6,11], Mars:[3,5,6,10,11,12], Mercury:[6,8,9,10,11,12], Jupiter:[5,6,11,12], Venus:[6,11,12], Saturn:[3,5,6,11], Lagna:[1,3,4,6,10,11] }
+};
+const AV_PLANETS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+const AV_CONTRIBUTORS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Lagna'];
+
+function computeAshtakavarga(positions, lagnaRashi) {
+  const contributorRashi = { Lagna: lagnaRashi };
+  AV_PLANETS.forEach(p => { contributorRashi[p] = getRashi(positions[p]); });
+
+  const bav = {};
+  AV_PLANETS.forEach(target => {
+    bav[target] = new Array(12).fill(0);
+    AV_CONTRIBUTORS.forEach(contrib => {
+      const rule = ASHTAKAVARGA_RULES[target][contrib];
+      const baseRashi = contributorRashi[contrib];
+      rule.forEach(offset => {
+        const sign = (baseRashi + offset - 1) % 12;
+        bav[target][sign] += 1;
+      });
+    });
+  });
+
+  const sav = new Array(12).fill(0);
+  AV_PLANETS.forEach(p => { for (let s = 0; s < 12; s++) sav[s] += bav[p][s]; });
+
+  return { bav, sav };
+}
+
+function renderAshtakavarga(positions, lagnaRashi) {
+  const { bav, sav } = computeAshtakavarga(positions, lagnaRashi);
+  const savTotal = sav.reduce((a, b) => a + b, 0);
+
+  const headerRow = '<th>રાશિ</th>' + AV_PLANETS.map(p => `<th>${planetGu(p)}</th>`).join('') + '<th>કુલ (SAV)</th>';
+  const bodyRows = RASHIS_GU.map((rname, s) => {
+    const cells = AV_PLANETS.map(p => `<td>${bav[p][s]}</td>`).join('');
+    const savCls = sav[s] >= 30 ? 'sav-cell-strong' : (sav[s] < 25 ? 'sav-cell-weak' : '');
+    return `<tr><td>${rname}${s === lagnaRashi ? ' (લગ્ન)' : ''}</td>${cells}<td class="${savCls}">${sav[s]}</td></tr>`;
+  }).join('');
+
+  return `
+    <div class="sav-table-wrapper">
+      <table class="sav-table">
+        <thead><tr>${headerRow}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+    <div class="sav-note">
+      દરેક રાશિનો કુલ સ્કોર (SAV) 0-56 ની વચ્ચે હોય છે — સમગ્ર કુંડળીનો કુલ સરવાળો હંમેશા 337 જ થાય છે (અહીં: ${savTotal}). <span class="sav-cell-strong">30+ = બળવાન રાશિ</span>, <span class="sav-cell-weak">25 થી ઓછું = નબળી રાશિ</span> — જે તે રાશિમાં ગ્રહની ગોચર-અસર કેવી મળશે તે માટે ઉપયોગી સંકેત. વિગતવાર ફલાદેશ માટે જ્યોતિષાચાર્યની સલાહ લેવી.
+    </div>`;
+}
+
 // Classical special aspects (drishti): every planet aspects the 7th house from
 // itself; Mars additionally aspects the 4th & 8th; Jupiter the 5th & 9th; Saturn the 3rd & 10th.
 function getAspectedHouses(planet, house) {
@@ -3182,110 +3264,39 @@ function lc_hardWorkText(p, lord6, lord10, positions) {
 }
 
 function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, kalsarp, pitru, sadeSati, gender) {
-  const GRAHAS = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
-  const houses = {};
-  GRAHAS.forEach(p => { houses[p] = houseOfPlanet(positions[p], lagnaRashi); });
-
-  const lord2  = houseLordPlanet(2, lagnaRashi);
+  // ---------- Difficult periods only (short) ----------
   const lord6  = houseLordPlanet(6, lagnaRashi);
-  const lord7  = houseLordPlanet(7, lagnaRashi);
   const lord8  = houseLordPlanet(8, lagnaRashi);
-  const lord10 = houseLordPlanet(10, lagnaRashi);
   const lord12 = houseLordPlanet(12, lagnaRashi);
 
-  // Marriage karaka (significator): Venus for a male chart, Jupiter for a female chart
-  const karakaPlanet = (gender === 'female') ? 'Jupiter' : 'Venus';
-  const karakaLabel   = (gender === 'female') ? 'ગુરુ' : 'શુક્ર';
-
-  const moonRashi = getRashi(positions['Moon']);
-  const sunRashi  = getRashi(positions['Sun']);
-
-  // ---------- Section 1: Behaviour / Personality ----------
-  const behaviourHtml = `
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">🧘 ૧. સ્વભાવ અને વ્યક્તિત્વ</div>
-      <p>${RASHI_TRAITS_LONG[lagnaRashi]}</p>
-      <p>ચંદ્ર રાશિ ${RASHIS_GU[moonRashi]} હોવાથી ${name} નું મન અને લાગણીઓ આ રાશિના ગુણોથી ઊંડાં પ્રભાવિત રહે છે — રોજિંદા સ્વભાવ, પ્રતિભાવ અને આંતરિક વિચારસરણી પર તેની છાપ સ્પષ્ટ દેખાય છે. સૂર્ય રાશિ ${RASHIS_GU[sunRashi]} હોવાથી આત્મવિશ્વાસ, ઈચ્છાશક્તિ અને જીવન પ્રત્યેનો અભિગમ ઘડાય છે.</p>
-      <p>એકંદરે, લગ્ન, ચંદ્ર અને સૂર્યના સંયોજનથી ${name} નું વ્યક્તિત્વ સંતુલિત અને પરિપક્વ બને છે. સમય જતાં અનુભવ સાથે સ્વભાવમાં વધુ સ્થિરતા અને સમજણ આવશે.</p>
-    </div>`;
-
-  // ---------- Section 2 & 3: Health & Accident (Dasha+Antardasha combination) ----------
-  const { healthBlocks, accidentBlocks } = lc_buildHealthAccident(vimDashas, positions, houses, lagnaRashi);
-  const healthAccidentHtml = `
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">🩺 ૨. આરોગ્ય વિચાર (મહાદશા-અંતર્દશા સંયોજન અનુસાર)</div>
-      <p>માત્ર મહાદશા નહીં, પરંતુ મહાદશા-સ્વામી અને અંતર્દશા-સ્વામી બંનેની આ લગ્ન-કુંડળી પ્રમાણેની કાર્યકારી (functional) પ્રકૃતિ, ષષ્ઠ-અષ્ટમ-દ્વાદશ ભાવ પરની સ્થિતિ/દૃષ્ટિ અને ગ્રહની અવસ્થા (ઉચ્ચ/નીચ/સ્વ-રાશિ) — આ બધાના સંયોજનથી નીચેના ચોક્કસ સમયગાળા તારવેલ છે. જ્યાં કોઈ ચોક્કસ સંયોજન અસર કરતું નથી ત્યાં તે મહાદશા સામાન્ય ગણેલ છે.</p>
-      <div class="conclusion-period-list">${healthBlocks}</div>
-    </div>
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">⚠️ ૩. અકસ્માત સંભાવના (મહાદશા-અંતર્દશા સંયોજન અનુસાર)</div>
-      <p>અકસ્માતનો વિચાર કુદરતી પાપ ગ્રહો (મંગળ, શનિ, રાહુ, કેતુ) પૈકી કોઈ મહાદશા કે અંતર્દશા સ્વામી તૃતીય, ષષ્ઠ, અષ્ટમ કે દ્વાદશ ભાવમાં સ્થિત હોય અથવા તેના પર દૃષ્ટિ નાખતો હોય ત્યારે જ કરવામાં આવ્યો છે — આથી સામાન્ય મહાદશા-સ્તરના અંદાજ કરતાં આ યાદી વધુ ચોક્કસ છે.</p>
-      <div class="conclusion-period-list">${accidentBlocks}</div>
-    </div>`;
-
-  // ---------- Section 4: Marriage across full life ----------
-  const marriageBlocks = lc_buildMarriage(vimDashas, positions, houses, lagnaRashi, lord7, lord2, karakaPlanet, karakaLabel);
-  const marriageHtml = `
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">💍 ૪. વિવાહ અને દામ્પત્ય જીવન — સંપૂર્ણ આયુષ્યકાળ</div>
-      <p>સપ્તમ ભાવ ${RASHIS_GU[(lagnaRashi+6)%12]} રાશિમાં આવે છે, જેનો સ્વામી ${planetGu(lord7)} છે; ${karakaLabel} (કારક ગ્રહ) ${houses[karakaPlanet]}મા ભાવમાં સ્થિત છે. નીચે સંપૂર્ણ જીવનના મહાદશા-ક્રમમાં, જ્યાં પણ ${karakaLabel}, સપ્તમેશ કે દ્વિતીયેશ મહાદશા અથવા અંતર્દશા સ્વામી તરીકે આવે છે તે ચોક્કસ ગાળા વિવાહ-સંબંધિત મહત્વના સમય તરીકે લીલા ચિહ્ન સાથે દર્શાવેલ છે.</p>
-      <div class="conclusion-period-list">${marriageBlocks}</div>
-    </div>`;
-
-  // ---------- Section 5: Tough time (functional-nature based, mahadasha level) ----------
   let toughBlocks = '';
   vimDashas.forEach(d => {
+    if (functionalNature(d.planet, lagnaRashi) !== 'malefic') return;
     const range = formatDate(d.start) + ' – ' + formatDate(d.end);
     const pg = planetGu(d.planet);
-    const isTough = functionalNature(d.planet, lagnaRashi) === 'malefic';
-    toughBlocks += lc_periodBlock(isTough ? 'caution' : '', pg + ' મહાદશા — ' + range, lc_toughText(d.planet, lagnaRashi, lord6, lord8, lord12, positions));
+    toughBlocks += lc_periodBlock('caution', pg + ' મહાદશા — ' + range, lc_toughText(d.planet, lagnaRashi, lord6, lord8, lord12, positions));
   });
+
   const sadeSatiFuture = (sadeSati && sadeSati.occurrences) ? sadeSati.occurrences.filter(o => !o.isPreBirth && !o.isPast) : [];
-  const sadeSatiHtml = sadeSatiFuture.length ? `<p>વધુમાં, સાડેસાતીના ${sadeSatiFuture.length} સમયગાળા (${sadeSatiFuture.map(o=>o.startStr+' – '+o.endStr).join(', ')}) દરમિયાન માનસિક તણાવ, જવાબદારીમાં વધારો અને ધીરજની કસોટી થઈ શકે — આ સમયે શનિ-સંબંધિત ઉપાય (શનિવારે તેલ-દાન, હનુમાન ચાલીસા) લાભદાયી.</p>` : '';
-  const toughHtml = `
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">🌩️ ૫. સંઘર્ષ અને કઠિન સમય</div>
-      <p>અહીં "કાર્યકારી (functional) અશુભ ગ્રહ" ની વ્યાખ્યા આ ચોક્કસ લગ્ન-કુંડળી પ્રમાણે કરેલ છે — એટલે કે જે ગ્રહ ષષ્ઠ, અષ્ટમ કે દ્વાદશ ભાવનો સ્વામી હોય તે જ અહીં અશુભ ગણેલ છે (શનિ-મંગળ દરેક કુંડળીમાં સરખા અશુભ નથી હોતા). આ પદ્ધતિ સામાન્ય ફિક્સ-લિસ્ટ કરતાં વધુ ચોકસાઈભરી છે.</p>
-      <div class="conclusion-period-list">${toughBlocks}</div>
-      ${sadeSatiHtml}
-    </div>`;
+  const sadeSatiHtml = sadeSatiFuture.length
+    ? `<p>સાડેસાતી: ${sadeSatiFuture.map(o => o.startStr + ' – ' + o.endStr).join(', ')} — આ ગાળામાં શનિ-સંબંધિત ઉપાય (શનિવારે તેલ-દાન, હનુમાન ચાલીસા) લાભદાયી.</p>`
+    : '';
 
-  // ---------- Section 6: Hard work / effort ----------
-  let hardWorkBlocks = '';
-  vimDashas.forEach(d => {
-    const range = formatDate(d.start) + ' – ' + formatDate(d.end);
-    const pg = planetGu(d.planet);
-    const isEffort = ['Saturn','Mars'].includes(d.planet) || d.planet===lord10 || d.planet===lord6;
-    hardWorkBlocks += lc_periodBlock(isEffort ? 'effort' : '', pg + ' મહાદશા — ' + range, lc_hardWorkText(d.planet, lord6, lord10, positions));
-  });
-  const hardWorkHtml = `
-    <div class="conclusion-section">
-      <div class="conclusion-section-title">💪 ૬. મહેનત, ઉદ્યમ અને પરિશ્રમનો સમય</div>
-      <p>દશમ ભાવ (કર્મ/વ્યવસાય) અને ષષ્ઠ ભાવ (સ્પર્ધા/સેવા) ના સ્વામી તથા શનિ-મંગળની મહાદશા મહેનત અને પુરુષાર્થના સમયગાળા દર્શાવે છે. જે સમયગાળામાં વિશેષ મહેનતની જરૂર છે તે ભૂરા ચિહ્ન સાથે દર્શાવેલ છે — આ સમય દરમિયાન કરેલી મહેનત ભવિષ્યમાં ચોક્કસ ફળ આપશે.</p>
-      <div class="conclusion-period-list">${hardWorkBlocks}</div>
-    </div>`;
-
-  // ---------- Section 7: Overall Conclusion ----------
   const doshaLines = [];
   if (mangal && mangal.hasDosha) doshaLines.push('મંગળ દોષ');
   if (kalsarp && kalsarp.hasKalsarp) doshaLines.push('કાળ-સર્પ દોષ');
   if (pitru && pitru.hasPitru) doshaLines.push('પિતૃ દોષ');
-  const doshaSummary = doshaLines.length
-    ? `કુંડળીમાં ${doshaLines.join(', ')} જોવા મળે છે — ઉપરોક્ત વિભાગમાં દર્શાવેલ ઉપાય નિયમિત કરવાથી તેની અસર હળવી થાય છે.`
-    : 'કુંડળીમાં કોઈ મુખ્ય દોષ જોવા મળતો નથી, જે જીવનમાં સ્થિરતા અને સરળતા સૂચવે છે.';
+  const doshaHtml = doshaLines.length ? `<p>ઉપરાંત કુંડળીમાં ${doshaLines.join(', ')} જોવા મળે છે.</p>` : '';
 
-  const finalHtml = `
+  return `
     <div class="conclusion-section">
-      <div class="conclusion-section-title">📜 ૭. સંપૂર્ણ જીવન નિષ્કર્ષ</div>
-      <div class="conclusion-final">
-        <p>${name} ની જન્મકુંડળીના સંપૂર્ણ વિશ્લેષણ પરથી કહી શકાય કે જીવન સ્વભાવે ${RASHIS_GU[lagnaRashi]} લગ્નના ગુણો પ્રમાણે ઘડાશે — મહેનત, ધીરજ અને સાચી દિશામાં પ્રયત્નથી ધાર્યું લક્ષ્ય પ્રાપ્ત થશે. સ્વાસ્થ્ય અને અકસ્માત અંગે ઉપર દર્શાવેલ મહાદશા-અંતર્દશા સંયોજનોના સમયગાળા દરમિયાન વિશેષ ધ્યાન રાખવાથી મોટા ભાગની મુશ્કેલી ટાળી શકાય છે.</p>
-        <p>વિવાહ અને દામ્પત્ય જીવન માટે ઉપર દર્શાવેલ ${karakaLabel}/સપ્તમેશ/દ્વિતીયેશ સંબંધિત ચોક્કસ અંતર્દશા-ગાળા સૌથી અનુકૂળ ગણાય. સંઘર્ષના સમયગાળા દરમિયાન ધીરજ ન છોડવી — તે પછીનો સમય સામાન્ય રીતે વધુ સાનુકૂળ સાબિત થાય છે.</p>
-        <p>${doshaSummary} એકંદરે, નિયમિત ધાર્મિક આચરણ, ઈષ્ટ-દેવની ઉપાસના અને વડીલોના આશીર્વાદ સાથે જીવન સુખ, સમૃદ્ધિ અને સંતોષ તરફ આગળ વધશે.</p>
-      </div>
-      <div class="conclusion-disclaimer">📌 નોંધ: ચોકસાઈ વધારવા આ નિષ્કર્ષ મહાદશા-અંતર્દશા સંયોજન, કાર્યકારી શુભ-અશુભ ગ્રહ (લગ્ન-આધારિત), ગ્રહની અવસ્થા (ઉચ્ચ/નીચ/સ્વ-રાશિ) અને પરંપરાગત દૃષ્ટિ (aspect) ના નિયમો પર આધારિત ગણતરી વડે તૈયાર થયેલ છે — છતાં આ એક સ્વયં-સંચાલિત ગણતરી-આધારિત સામાન્ય માર્ગદર્શન છે, ભવિષ્યવાણી નહીં. વ્યક્તિગત જીવનની મહત્વની ઘટનાઓ (સ્વાસ્થ્ય, વિવાહ, વ્યવસાય) અંગે અંતિમ નિર્ણય લેતાં પહેલાં અનુભવી જ્યોતિષાચાર્યની રૂબરૂ સલાહ અવશ્ય લેવી.</div>
+      <div class="conclusion-section-title">🌩️ કઠિન સમયગાળા</div>
+      <p>${name} ની કુંડળી પ્રમાણે નીચેના મહાદશા-ગાળા ખાસ સાવધાની અને ધીરજ માંગે છે.</p>
+      <div class="conclusion-period-list">${toughBlocks || '<p>કોઈ ખાસ કઠિન મહાદશા-ગાળો સ્પષ્ટ રીતે જોવા મળતો નથી — એકંદરે અનુકૂળ ગણી શકાય.</p>'}</div>
+      ${sadeSatiHtml}
+      ${doshaHtml}
+      <div class="conclusion-disclaimer">📌 આ સામાન્ય ગણતરી-આધારિત માર્ગદર્શન છે, ભવિષ્યવાણી નહીં — ચોક્કસ સલાહ માટે જ્યોતિષાચાર્યનો રૂબરૂ સંપર્ક કરો.</div>
     </div>`;
-
-  return behaviourHtml + healthAccidentHtml + marriageHtml + toughHtml + hardWorkHtml + finalHtml;
 }
 
 // ==================== REPORT PRINT / SHARE ====================
@@ -3303,23 +3314,26 @@ function printLifeConclusion() {
   const today = new Date().toLocaleDateString('en-GB');
 
   document.getElementById('printReportArea').innerHTML = `
-    <div class="print-report-header">
-      <div class="print-report-om">🕉️</div>
-      <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
-      <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
-    </div>
-    <div class="print-report-meta">
-      <span><b>નામ:</b> ${name}</span>
-      <span><b>જન્મ તારીખ:</b> ${dob}</span>
-      <span><b>જન્મ સમય:</b> ${tob}</span>
-      <span><b>જન્મ સ્થળ:</b> ${pob}</span>
-      <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
-    </div>
-    <div class="print-report-body">${el.innerHTML}</div>
-    <div class="print-report-footer">
-      🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
-      સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
-      નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
+    <div class="print-watermark">સંજયકુમાર શાસ્ત્રી</div>
+    <div class="print-report-content">
+      <div class="print-report-header">
+        <div class="print-report-om">🕉️</div>
+        <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
+        <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
+      </div>
+      <div class="print-report-meta">
+        <span><b>નામ:</b> ${name}</span>
+        <span><b>જન્મ તારીખ:</b> ${dob}</span>
+        <span><b>જન્મ સમય:</b> ${tob}</span>
+        <span><b>જન્મ સ્થળ:</b> ${pob}</span>
+        <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
+      </div>
+      <div class="print-report-body">${el.innerHTML}</div>
+      <div class="print-report-footer">
+        🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
+        સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
+        નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
+      </div>
     </div>`;
 
   window.print();
@@ -3778,6 +3792,9 @@ async function generateKundali() {
 
     // Yoga detection
     document.getElementById('yogaSection').innerHTML = renderYogas(positions, lagnaRashi);
+
+    // Ashtakavarga
+    document.getElementById('ashtakavargaSection').innerHTML = renderAshtakavarga(positions, lagnaRashi);
 
     // KP Section
     document.getElementById('kpSection').innerHTML = renderKPSection(positions);
