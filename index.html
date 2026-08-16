@@ -13,6 +13,8 @@
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#1A0A00">
 <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Noto+Sans+Gujarati:wght@300;400;600;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --saffron: #FF6B1A;
@@ -675,9 +677,9 @@
     box-shadow: 0 6px 20px rgba(212,160,23,0.3);
   }
 
-  /* Note: the printable report is now built and printed in its own isolated
-     window/document (see printLifeConclusion() in JS) rather than in this
-     page, so it no longer needs print-specific CSS here. */
+  /* Note: the report PDF is generated client-side (html2canvas + jsPDF) in
+     printLifeConclusion() rather than via the browser's print dialog, so it
+     no longer needs print-specific CSS here. */
   .whatsapp-btn {
     background: linear-gradient(135deg, #25D366, #128C7E) !important;
     color: #fff !important;
@@ -1530,7 +1532,7 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <div class="section-header"><h2>📜 સંપૂર્ણ જીવન નિષ્કર્ષ (Complete Life Conclusion)</h2></div>
   <div class="conclusion-wrap" id="lifeConclusionSection"></div>
   <div style="text-align:center; display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap;">
-    <button class="print-btn" onclick="printLifeConclusion()">🖨️ નિષ્કર્ષ પ્રિન્ટ / PDF કરો</button>
+    <button class="print-btn" onclick="printLifeConclusion(event)">📄 PDF ડાઉનલોડ કરો</button>
     <button class="print-btn whatsapp-btn" onclick="shareLifeConclusionWhatsApp()">📲 WhatsApp પર શેર કરો</button>
   </div>
 
@@ -3219,115 +3221,123 @@ function generateLifeConclusion(name, positions, lagnaRashi, vimDashas, mangal, 
 
 // ==================== REPORT PRINT / SHARE ====================
 
-function printLifeConclusion() {
+async function printLifeConclusion(evt) {
   const el = document.getElementById('lifeConclusionSection');
   if (!el || !el.innerHTML.trim()) {
     alert('કૃપા કરી પહેલા કુંડળી બનાવો.');
     return;
   }
+  if (!window.html2canvas || !window.jspdf) {
+    alert('PDF બનાવવા માટે જરૂરી લાઇબ્રેરી લોડ થઈ નથી — ઇન્ટરનેટ કનેક્શન ચકાસી ફરી પ્રયત્ન કરો.');
+    return;
+  }
+
+  const btn = evt && evt.target;
+  const originalBtnText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '⏳ PDF બની રહ્યું છે...'; btn.disabled = true; }
+
   const name  = document.getElementById('name').value || 'જાતક';
   const dob   = document.getElementById('dob').value || '-';
   const tob   = document.getElementById('tob').value || '-';
   const pob   = document.getElementById('pob').value || '-';
   const today = new Date().toLocaleDateString('en-GB');
 
-  // Built and printed in a fresh, isolated window/document — not the main SPA page.
-  // This keeps the printed page count tied only to the report's own content
-  // (the main page's hidden tabs/charts no longer affect print pagination),
-  // and makes the watermark render reliably since there is no visibility-hiding trick involved.
-  const reportDoc = `<!DOCTYPE html>
-<html lang="gu">
-<head>
-<meta charset="UTF-8">
-<title>${name} — સંપૂર્ણ જીવન નિષ્કર્ષ</title>
-<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  body {
-    font-family: 'Noto Sans Gujarati', sans-serif;
-    color: #111;
-    margin: 0;
-    padding: 30px 36px;
-    position: relative;
-    background: #fff;
-  }
-  .print-watermark {
-    position: fixed;
-    top: 45%; left: 50%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    font-family: 'Yatra One', cursive;
-    font-size: 3.6rem;
-    color: rgba(139,26,26,0.11);
-    white-space: nowrap;
-    z-index: 0;
-  }
-  .content { position: relative; z-index: 1; }
-  .print-report-header { text-align:center; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #C8860A; }
-  .print-report-om { font-size:1.7rem; margin-bottom:2px; }
-  .print-report-title { font-family:'Yatra One',cursive; font-size:1.7rem; color:#8B1A1A; }
-  .print-report-subtitle { font-size:0.9rem; color:#555; margin-top:2px; }
-  .print-report-meta { display:flex; flex-wrap:wrap; gap:5px 22px; font-size:0.88rem; color:#333; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #ddd; }
-  .conclusion-section { margin-bottom: 1.4rem; page-break-inside: avoid; }
-  .conclusion-section-title { font-family:'Yatra One',cursive; font-size:1.25rem; color:#8B1A1A; border-bottom:1px solid #ddd; padding-bottom:7px; margin-bottom:12px; }
-  .conclusion-section p { color:#222; line-height:1.9; font-size:0.96rem; margin:0 0 10px; }
-  .conclusion-period { border:1px solid #ccc; border-left:4px solid #999; border-radius:6px; padding:12px 16px; margin-bottom:12px; }
-  .conclusion-period.caution { border-left-color:#B23A3A; }
-  .conclusion-period.favorable { border-left-color:#2E7D32; }
-  .conclusion-period.effort { border-left-color:#2A5FA5; }
-  .conclusion-period-head { font-weight:700; color:#8B1A1A; margin-bottom:5px; }
-  .conclusion-period-body { color:#222; font-size:0.92rem; line-height:1.8; }
-  .conclusion-disclaimer { font-size:0.82rem; color:#555; border-top:1px solid #ccc; padding-top:10px; margin-top:12px; }
-  .print-report-footer { margin-top:22px; padding-top:12px; border-top:2px solid #C8860A; text-align:center; font-size:0.85rem; color:#333; line-height:1.8; }
-  @page { margin: 15mm 14mm; }
-</style>
-</head>
-<body>
-  <div class="print-watermark">સંજયકુમાર શાસ્ત્રી</div>
-  <div class="content">
-    <div class="print-report-header">
-      <div class="print-report-om">🕉️</div>
-      <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
-      <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
-    </div>
-    <div class="print-report-meta">
-      <span><b>નામ:</b> ${name}</span>
-      <span><b>જન્મ તારીખ:</b> ${dob}</span>
-      <span><b>જન્મ સમય:</b> ${tob}</span>
-      <span><b>જન્મ સ્થળ:</b> ${pob}</span>
-      <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
-    </div>
-    <div class="print-report-body">${el.innerHTML}</div>
-    <div class="print-report-footer">
-      🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
-      સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
-      નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
-    </div>
-  </div>
-  <script>
-    window.onload = function () {
-      // Wait for the Gujarati webfont to actually finish loading before printing —
-      // printing too early (fixed timeout) can snapshot a fallback font mid-swap,
-      // which is what causes dropped/garbled conjuncts in the exported PDF.
-      if (window.document.fonts && window.document.fonts.ready) {
-        window.document.fonts.ready.then(function () {
-          setTimeout(function () { window.print(); }, 200);
-        });
-      } else {
-        setTimeout(function () { window.print(); }, 800);
-      }
-    };
-  <\/script>
-</body>
-</html>`;
+  // Build the report off-screen (not display:none — html2canvas needs it laid out
+  // and painted) using the browser's own text engine, so Gujarati conjuncts render
+  // correctly. This is then rasterized and placed into a PDF directly — no OS print
+  // dialog involved at all, so there's no browser-added header/footer/page-number.
+  const style = document.createElement('style');
+  style.id = 'pdfReportStyle';
+  style.textContent = `
+    #pdfReportBuild { position:absolute; left:-9999px; top:0; width:780px; background:#fff;
+      padding:34px 40px; font-family:'Noto Sans Gujarati',sans-serif; color:#111; }
+    #pdfReportBuild .pdf-watermark { position:absolute; top:40%; left:50%;
+      transform:translate(-50%,-50%) rotate(-30deg); font-family:'Yatra One',cursive;
+      font-size:54px; color:rgba(139,26,26,0.13); white-space:nowrap; z-index:0; }
+    #pdfReportBuild .pdf-content { position:relative; z-index:1; }
+    #pdfReportBuild .print-report-header { text-align:center; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #C8860A; }
+    #pdfReportBuild .print-report-om { font-size:28px; margin-bottom:2px; }
+    #pdfReportBuild .print-report-title { font-family:'Yatra One',cursive; font-size:28px; color:#8B1A1A; }
+    #pdfReportBuild .print-report-subtitle { font-size:15px; color:#555; margin-top:2px; }
+    #pdfReportBuild .print-report-meta { display:flex; flex-wrap:wrap; gap:5px 22px; font-size:14px; color:#333; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #ddd; }
+    #pdfReportBuild .conclusion-section { margin-bottom:22px; }
+    #pdfReportBuild .conclusion-section-title { font-family:'Yatra One',cursive; font-size:20px; color:#8B1A1A; border-bottom:1px solid #ddd; padding-bottom:7px; margin-bottom:12px; }
+    #pdfReportBuild .conclusion-section p { color:#222; line-height:1.9; font-size:15px; margin:0 0 10px; }
+    #pdfReportBuild .conclusion-period { border:1px solid #ccc; border-left:4px solid #999; border-radius:6px; padding:12px 16px; margin-bottom:12px; }
+    #pdfReportBuild .conclusion-period.caution { border-left-color:#B23A3A; }
+    #pdfReportBuild .conclusion-period.favorable { border-left-color:#2E7D32; }
+    #pdfReportBuild .conclusion-period.effort { border-left-color:#2A5FA5; }
+    #pdfReportBuild .conclusion-period-head { font-weight:700; color:#8B1A1A; margin-bottom:5px; font-size:15px; }
+    #pdfReportBuild .conclusion-period-body { color:#222; font-size:14px; line-height:1.8; }
+    #pdfReportBuild .conclusion-disclaimer { font-size:13px; color:#555; border-top:1px solid #ccc; padding-top:10px; margin-top:12px; }
+    #pdfReportBuild .print-report-footer { margin-top:22px; padding-top:12px; border-top:2px solid #C8860A; text-align:center; font-size:13px; color:#333; line-height:1.8; }
+  `;
+  document.head.appendChild(style);
 
-  const printWin = window.open('', '_blank', 'width=850,height=1000');
-  if (!printWin) {
-    alert('પોપ-અપ બ્લોક થયેલ છે — કૃપા કરી બ્રાઉઝરમાં પોપ-અપ મંજૂરી આપો અને ફરી પ્રયત્ન કરો.');
-    return;
+  const wrapper = document.createElement('div');
+  wrapper.id = 'pdfReportBuild';
+  wrapper.innerHTML = `
+    <div class="pdf-watermark">સંજયકુમાર શાસ્ત્રી</div>
+    <div class="pdf-content">
+      <div class="print-report-header">
+        <div class="print-report-om">🕉️</div>
+        <div class="print-report-title">નિગમાયુ જ્યોતિષ</div>
+        <div class="print-report-subtitle">સંપૂર્ણ જીવન નિષ્કર્ષ — Full Life Conclusion Report</div>
+      </div>
+      <div class="print-report-meta">
+        <span><b>નામ:</b> ${name}</span>
+        <span><b>જન્મ તારીખ:</b> ${dob}</span>
+        <span><b>જન્મ સમય:</b> ${tob}</span>
+        <span><b>જન્મ સ્થળ:</b> ${pob}</span>
+        <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
+      </div>
+      <div>${el.innerHTML}</div>
+      <div class="print-report-footer">
+        🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
+        સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
+        નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877
+      </div>
+    </div>`;
+  document.body.appendChild(wrapper);
+
+  try {
+    // Wait for the Gujarati webfont to fully load before rasterizing — this is
+    // what actually fixes dropped/garbled conjuncts, since html2canvas paints
+    // exactly what the browser has rendered at capture time.
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 150));
+
+    const canvas = await html2canvas(wrapper, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${name} - જીવન નિષ્કર્ષ.pdf`);
+  } catch (err) {
+    alert('PDF બનાવવામાં ભૂલ આવી — ફરી પ્રયત્ન કરો.');
+    console.error(err);
+  } finally {
+    document.body.removeChild(wrapper);
+    document.head.removeChild(style);
+    if (btn) { btn.textContent = originalBtnText; btn.disabled = false; }
   }
-  printWin.document.open();
-  printWin.document.write(reportDoc);
-  printWin.document.close();
 }
 
 function shareLifeConclusionWhatsApp() {
