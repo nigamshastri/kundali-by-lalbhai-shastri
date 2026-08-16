@@ -1532,7 +1532,8 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
   <div class="section-header"><h2>📜 સંપૂર્ણ જીવન નિષ્કર્ષ (Complete Life Conclusion)</h2></div>
   <div class="conclusion-wrap" id="lifeConclusionSection"></div>
   <div style="text-align:center; display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap;">
-    <button class="print-btn" onclick="printLifeConclusion(event)">📄 PDF ડાઉનલોડ કરો</button>
+    <button class="print-btn" onclick="printLifeConclusion(event)">📄 કઠિન સમયગાળા PDF</button>
+    <button class="print-btn" onclick="downloadFullKundaliPDF(event)" style="background:linear-gradient(135deg,rgba(150,60,0,0.9),rgba(90,30,0,0.9));">📕 સંપૂર્ણ કુંડળી PDF</button>
     <button class="print-btn whatsapp-btn" onclick="shareLifeConclusionWhatsApp()">📲 WhatsApp પર શેર કરો</button>
   </div>
 
@@ -3336,6 +3337,110 @@ async function printLifeConclusion(evt) {
   } finally {
     document.body.removeChild(wrapper);
     document.head.removeChild(style);
+    if (btn) { btn.textContent = originalBtnText; btn.disabled = false; }
+  }
+}
+
+async function downloadFullKundaliPDF(evt) {
+  const resultsEl = document.getElementById('results');
+  if (!resultsEl || !resultsEl.classList.contains('visible')) {
+    alert('કૃપા કરી પહેલા કુંડળી બનાવો.');
+    return;
+  }
+  if (!window.html2canvas || !window.jspdf) {
+    alert('PDF બનાવવા માટે જરૂરી લાઇબ્રેરી લોડ થઈ નથી — ઇન્ટરનેટ કનેક્શન ચકાસી ફરી પ્રયત્ન કરો.');
+    return;
+  }
+
+  const btn = evt && evt.target;
+  const originalBtnText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '⏳ સંપૂર્ણ PDF બની રહ્યું છે...'; btn.disabled = true; }
+
+  const name  = document.getElementById('name').value || 'જાતક';
+  const dob   = document.getElementById('dob').value || '-';
+  const tob   = document.getElementById('tob').value || '-';
+  const pob   = document.getElementById('pob').value || '-';
+  const today = new Date().toLocaleDateString('en-GB');
+
+  // Clone the live, already-rendered results panel — every section (chart SVGs,
+  // panchang, planets, yogas, ashtakavarga, divisional charts, dashas,
+  // predictions, life conclusion) comes through exactly as shown on screen,
+  // instead of being rebuilt from scratch.
+  const clone = resultsEl.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.style.maxWidth = '900px';
+  clone.querySelectorAll('.print-btn, .whatsapp-btn').forEach(b => b.remove());
+
+  const watermark = document.createElement('div');
+  watermark.style.cssText = 'position:absolute; top:40%; left:50%; transform:translate(-50%,-50%) rotate(-30deg); font-family:"Yatra One",cursive; font-size:60px; color:rgba(255,215,0,0.08); white-space:nowrap; z-index:0; pointer-events:none;';
+  watermark.textContent = 'સંજયકુમાર શાસ્ત્રી';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'position:relative; z-index:1; text-align:center; margin-bottom:20px; padding-bottom:14px; border-bottom:2px solid #D4A017; font-family:"Noto Sans Gujarati",sans-serif;';
+  header.innerHTML = `
+    <div style="font-size:1.8rem;">🕉️</div>
+    <div style="font-family:'Yatra One',cursive;font-size:1.8rem;color:#FFD700;">નિગમાયુ જ્યોતિષ</div>
+    <div style="font-size:0.9rem;color:rgba(255,220,150,0.75);margin-top:4px;">સંપૂર્ણ કુંડળી રિપોર્ટ — Complete Kundali Report</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;font-size:0.85rem;color:rgba(255,248,240,0.8);margin-top:10px;">
+      <span><b>નામ:</b> ${name}</span>
+      <span><b>જન્મ તારીખ:</b> ${dob}</span>
+      <span><b>જન્મ સમય:</b> ${tob}</span>
+      <span><b>જન્મ સ્થળ:</b> ${pob}</span>
+      <span><b>રિપોર્ટ તારીખ:</b> ${today}</span>
+    </div>`;
+
+  const footer = document.createElement('div');
+  footer.style.cssText = 'position:relative; z-index:1; margin-top:24px; padding-top:14px; border-top:2px solid #D4A017; text-align:center; font-size:0.85rem; color:rgba(255,248,240,0.8); font-family:"Noto Sans Gujarati",sans-serif; line-height:1.8;';
+  footer.innerHTML = `
+    🕉️ નિગમાયુ જ્યોતિષ · વ્યક્તિગત સલાહ માટે સંપર્ક કરો<br>
+    સંજયકુમાર હરિપ્રસાદ શાસ્ત્રી (લાલભાઈ શાસ્ત્રી — પુંધરાવાળા) · 📞 98254 70113<br>
+    નિગમ સંજયકુમાર શાસ્ત્રી · 📞 70969 34877`;
+
+  const contentWrap = document.createElement('div');
+  contentWrap.style.cssText = 'position:relative; z-index:1;';
+  contentWrap.appendChild(header);
+  contentWrap.appendChild(clone);
+  contentWrap.appendChild(footer);
+
+  const wrapper = document.createElement('div');
+  wrapper.id = 'fullPdfBuild';
+  wrapper.style.cssText = 'position:absolute; left:-99999px; top:0; width:900px; background:#1A0A00; padding:30px 34px;';
+  wrapper.appendChild(watermark);
+  wrapper.appendChild(contentWrap);
+  document.body.appendChild(wrapper);
+
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 200));
+
+    const canvas = await html2canvas(wrapper, { scale: 2, backgroundColor: '#1A0A00', useCORS: true });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${name} - સંપૂર્ણ કુંડળી.pdf`);
+  } catch (err) {
+    alert('PDF બનાવવામાં ભૂલ આવી — ફરી પ્રયત્ન કરો.');
+    console.error(err);
+  } finally {
+    document.body.removeChild(wrapper);
     if (btn) { btn.textContent = originalBtnText; btn.disabled = false; }
   }
 }
